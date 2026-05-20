@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AURA CRYPTO AND FX AI - Advanced Institutional Crypto & Forex Market Analysis Assistant">
+  <title>AURA CRYPTO AND FX AI // Quantum Market Analysis Terminal</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;800&family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- TradingView Chart Widget Library -->
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Glowing Elements -->
+  <div class="glow-bg-primary"></div>
+  <div class="glow-bg-secondary"></div>
+
+  <!-- Main Terminal Wrapper -->
+  <div id="terminal-container">
+    
+    <!-- Top Header Bar -->
+    <header class="terminal-header">
+      <div class="logo-area">
+        <div class="logo-icon"><i class="fa-solid fa-microchip"></i></div>
+        <div class="logo-text">
+          <h1>AURA <span class="neon-purple">CRYPTO & FX AI</span></h1>
+          <span class="sub-text">QUANTUM INSTITUTIONAL ENGINE</span>
+        </div>
+      </div>
+      
+      <!-- Live Ticker Tape (WebSockets/Aggregated Data) -->
+      <div class="ticker-tape" id="ticker-tape">
+        <div class="ticker-item" id="ticker-BTC">
+          <span class="ticker-label">BTC/USD</span>
+          <span class="ticker-price">--.--</span>
+          <span class="ticker-change">--.--%</span>
+        </div>
+        <div class="ticker-item" id="ticker-ETH">
+          <span class="ticker-label">ETH/USD</span>
+          <span class="ticker-price">--.--</span>
+          <span class="ticker-change">--.--%</span>
+        </div>
+        <div class="ticker-item" id="ticker-XAU">
+          <span class="ticker-label">XAU/USD</span>
+          <span class="ticker-price">--.--</span>
+          <span class="ticker-change">--.--%</span>
+        </div>
+        <div class="ticker-item" id="ticker-EUR">
+          <span class="ticker-label">EUR/USD</span>
+          <span class="ticker-price">--.--</span>
+          <span class="ticker-change">--.--%</span>
+        </div>
+        <div class="ticker-item" id="ticker-GBP">
+          <span class="ticker-label">GBP/USD</span>
+          <span class="ticker-price">--.--</span>
+          <span class="ticker-change">--.--%</span>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <button id="premium-upgrade-btn" class="premium-upgrade-btn"><i class="fa-solid fa-crown"></i> GO PREMIUM</button>
+        <div class="status-indicator">
+          <span class="pulse-dot green"></span>
+          <span class="status-lbl">LIVE ALGORITHMIC CORRELATOR</span>
+        </div>
+        <div class="time-lbl" id="current-time">03:35:31 UTC</div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <main class="terminal-body">
+      
+      <!-- Left Panel: Market & Asset Selector + Tech Indicators -->
+      <aside class="panel left-panel" id="asset-picker-panel" style="overflow-y: auto; scrollbar-width: thin; gap: 10px;">
+        <div class="panel-header" style="flex-shrink: 0;">
+          <h2><i class="fa-solid fa-chart-line"></i> ASSETS & TECH CORES</h2>
+          <span class="badge neon-border">ACTIVE</span>
+        </div>
+        
+        <div class="panel-content" style="display: flex; flex-direction: column; gap: 10px; padding: 10px;">
+          <!-- Trading Mode Selection -->
+          <div class="control-group">
+            <label class="control-label">TRADING MODE</label>
+            <div class="mode-tabs">
+              <button class="mode-tab" id="mode-scalping" data-mode="scalping">
+                <i class="fa-solid fa-bolt"></i> Scalp
+              </button>
+              <button class="mode-tab active" id="mode-intraday" data-mode="intraday">
+                <i class="fa-solid fa-clock"></i> Intraday
+              </button>
+              <button class="mode-tab" id="mode-swing" data-mode="swing">
+                <i class="fa-solid fa-calendar-days"></i> Swing <i class="fa-solid fa-lock premium-lock"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Timeframe Selection -->
+          <div class="control-group">
+            <label class="control-label">TIMEFRAME</label>
+            <div class="timeframe-grid">
+              <button class="tf-btn" data-tf="5m">5M</button>
+              <button class="tf-btn active" data-tf="15m">15M</button>
+              <button class="tf-btn" data-tf="1h">1H</button>
+              <button class="tf-btn" data-tf="4h">4H</button>
+              <button class="tf-btn" data-tf="1d">1D</button>
+            </div>
+          </div>
+
+          <!-- Cryptocurrencies List -->
+          <div class="asset-list-container">
+            <div class="asset-group-title">CRYPTOCURRENCY</div>
+            <div class="asset-list" id="crypto-list">
+              <div class="asset-row active" data-symbol="BTCUSD" data-type="crypto">
+                <div class="asset-main">
+                  <i class="fa-brands fa-btc asset-icon crypto-icon"></i>
+                  <div>
+                    <div class="asset-name">BTC / USD</div>
+                    <div class="asset-sub">Bitcoin</div>
+                  </div>
+                </div>
+                <div class="asset-rates">
+                  <div class="asset-val" id="list-price-BTCUSD">--.--</div>
+                  <div class="asset-pct" id="list-change-BTCUSD">--.--%</div>
+                </div>
+              </div>
+              
+              <div class="asset-row" data-symbol="SOLUSD" data-type="crypto">
+                <div class="asset-main">
+                  <i class="fa-solid fa-s asset-icon crypto-icon" style="color: #a855f7;"></i>
+                  <div>
+                    <div class="asset-name">SOL / USD</div>
+                    <div class="asset-sub">Solana Spot</div>
+                  </div>
+                </div>
+                <div class="asset-rates">
+                  <div class="asset-val" id="list-price-SOLUSD">--.--</div>
+                  <div class="asset-pct" id="list-change-SOLUSD">--.--%</div>
+                </div>
+              </div>
+
+              <div class="asset-row" data-symbol="ETHUSD" data-type="crypto">
+                <div class="asset-main">
+                  <i class="fa-brands fa-ethereum asset-icon crypto-icon"></i>
+                  <div>
+                    <div class="asset-name">ETH / USD</div>
+                    <div class="asset-sub">Ethereum</div>
+                  </div>
+                </div>
+                <div class="asset-rates">
+                  <div class="asset-val" id="list-price-ETHUSD">--.--</div>
+                  <div class="asset-pct" id="list-change-ETHUSD">--.--%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forex & Commodities List -->
+          <div class="asset-list-container">
+            <div class="asset-group-title">FOREX & COMMODITIES</div>
+            <div class="asset-list" id="forex-list">
+              <div class="asset-row" data-symbol="XAUUSD" data-type="forex">
+                <div class="asset-main">
+                  <i class="fa-solid fa-coins asset-icon forex-icon"></i>
+                  <div>
+                    <div class="asset-name">XAU / USD <i class="fa-solid fa-lock premium-lock"></i></div>
+                    <div class="asset-sub">Gold Spot</div>
+                  </div>
+                </div>
+                <div class="asset-rates">
+                  <div class="asset-val" id="list-price-XAUUSD">--.--</div>
+                  <div class="asset-pct" id="list-change-XAUUSD">--.--%</div>
+                </div>
+              </div>
+
+              <div class="asset-row" data-symbol="EURUSD" data-type="forex">
+                <div class="asset-main">
+                  <i class="fa-solid fa-euro-sign asset-icon forex-icon"></i>
+                  <div>
+                    <div class="asset-name">EUR / USD</div>
+                    <div class="asset-sub">Euro / Dollar</div>
+                  </div>
+                </div>
+                <div class="asset-rates">
+                  <div class="asset-val" id="list-price-EURUSD">--.--</div>
+                  <div class="asset-pct" id="list-change-EURUSD">--.--%</div>
+                </div>
+              </div>
+
+              <div class="asset-row" data-symbol="GBPUSD" data-type="forex">
+                <div class="asset-main">
+                  <i class="fa-solid fa-sterling-sign asset-icon forex-icon"></i>
+                  <div>
+                    <div class="asset-name">GBP / USD <i class="fa-solid fa-lock premium-lock"></i></div>
+                    <div class="asset-sub">Pound / Dollar</div>
+                  </div>
+                </div>
+                <div class="asset-rates">
+                  <div class="asset-val" id="list-price-GBPUSD">--.--</div>
+                  <div class="asset-pct" id="list-change-GBPUSD">--.--%</div>
+                </div>
+              </div>
+
+              <div class="asset-row" data-symbol="USDJPY" data-type="forex">
+                <div class="asset-main">
+                  <i class="fa-solid fa-yen-sign asset-icon forex-icon"></i>
+                  <div>
+                    <div class="asset-name">USD / JPY <i class="fa-solid fa-lock premium-lock"></i></div>
+                    <div class="asset-sub">Dollar / Yen</div>
+                  </div>
+                </div>
+                <div class="asset-rates">
+                  <div class="asset-val" id="list-price-USDJPY">--.--</div>
+                  <div class="asset-pct" id="list-change-USDJPY">--.--%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Multi-Timeframe Matrix -->
+          <div class="widget-box glass-panel" style="margin-top: 5px;">
+            <div class="widget-header">
+              <h3><i class="fa-solid fa-layer-group"></i> TIMEFRAME BIAS MATRIX</h3>
+              <span class="lbl-indicator">CONFLUENCE</span>
+            </div>
+            <div class="widget-content">
+              <div class="mtf-matrix">
+                <div class="mtf-row">
+                  <span class="mtf-tf">5M</span>
+                  <span class="mtf-status bull" id="mtf-5m"><i class="fa-solid fa-circle-arrow-up"></i> BULLISH</span>
+                </div>
+                <div class="mtf-row">
+                  <span class="mtf-tf">15M</span>
+                  <span class="mtf-status bull" id="mtf-15m"><i class="fa-solid fa-circle-arrow-up"></i> BULLISH</span>
+                </div>
+                <div class="mtf-row">
+                  <span class="mtf-tf">1H</span>
+                  <span class="mtf-status bear" id="mtf-1h"><i class="fa-solid fa-circle-arrow-down"></i> BEARISH</span>
+                </div>
+                <div class="mtf-row">
+                  <span class="mtf-tf">4H</span>
+                  <span class="mtf-status bear" id="mtf-4h"><i class="fa-solid fa-circle-arrow-down"></i> BEARISH</span>
+                </div>
+                <div class="mtf-row">
+                  <span class="mtf-tf">1D</span>
+                  <span class="mtf-status bear" id="mtf-1d"><i class="fa-solid fa-circle-arrow-down"></i> BEARISH</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Smart Money Concepts & Indicator Status -->
+          <div class="widget-box glass-panel" style="margin-top: 5px;">
+            <div class="widget-header">
+              <h3><i class="fa-solid fa-cubes-stacked"></i> SMC & ICT CONCEPTS</h3>
+              <span class="badge text-amber" id="smc-scan-badge">DETECTED</span>
+            </div>
+            <div class="widget-content">
+              <div class="smc-tracker">
+                <div class="smc-item">
+                  <div class="smc-left">
+                    <div class="smc-lbl">ORDER BLOCK (OB)</div>
+                    <div class="smc-sub" id="smc-ob-range">--.-- - --.--</div>
+                  </div>
+                  <span class="smc-status active-bull" id="smc-ob-status">BULLISH</span>
+                </div>
+
+                <div class="smc-item">
+                  <div class="smc-left">
+                    <div class="smc-lbl">FAIR VALUE GAP (FVG)</div>
+                    <div class="smc-sub" id="smc-fvg-range">--.-- - --.--</div>
+                  </div>
+                  <span class="smc-status active-gap" id="smc-fvg-status">OPEN GAP</span>
+                </div>
+
+                <div class="smc-item">
+                  <div class="smc-left">
+                    <div class="smc-lbl">LIQUIDITY SWEEP</div>
+                    <div class="smc-sub" id="smc-liq-level">--.-- Pool swept</div>
+                  </div>
+                  <span class="smc-status swept" id="smc-liq-status">CLEARED</span>
+                </div>
+
+                <div class="smc-indicator-stats">
+                  <div class="ind-badge">RSI: <span id="smc-rsi-val">--</span></div>
+                  <div class="ind-badge">MACD: <span id="smc-macd-val">--</span></div>
+                  <div class="ind-badge">VOL: <span id="smc-volume-val">--</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Sentiment & News Volatility Filter -->
+          <div class="widget-box glass-panel" style="margin-top: 5px;">
+            <div class="widget-header">
+              <h3><i class="fa-solid fa-newspaper"></i> SENTIMENT & NEWS</h3>
+              <span class="badge red-bg pulse-border">FOMC FILTER</span>
+            </div>
+            <div class="widget-content">
+              <div class="sentiment-widget">
+                <!-- Sentiment Bar -->
+                <div class="sentiment-lbl-row">
+                  <span>BULLISH (RETAIL)</span>
+                  <span>BEARISH</span>
+                </div>
+                <div class="sentiment-bar">
+                  <div class="sent-bull" id="sentiment-bull-pct" style="width: 58%;">58%</div>
+                  <div class="sent-bear" id="sentiment-bear-pct" style="width: 42%;">42%</div>
+                </div>
+                
+                <!-- Calendar Impact Events -->
+                <div class="event-alerts-list" id="calendar-alerts-list">
+                  <div class="event-alert impact-high">
+                    <div class="evt-title">
+                      <span class="evt-badge">FOMC</span>
+                      <span>Federal Funds Rate decision</span>
+                    </div>
+                    <div class="evt-footer">
+                      <span>Impact: <strong class="red-text">EXTREME</strong></span>
+                      <span>Filtered: <strong class="green-text">YES</strong></span>
+                    </div>
+                  </div>
+
+                  <div class="event-alert impact-medium">
+                    <div class="evt-title">
+                      <span class="evt-badge">CPI</span>
+                      <span>US Consumer Inflation YoY</span>
+                    </div>
+                    <div class="evt-footer">
+                      <span>Impact: <strong class="amber-text">HIGH</strong></span>
+                      <span>Filtered: <strong class="green-text">YES</strong></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Panel: Live Charts (Fully Anchored & Fully Visible) -->
+      <section class="panel center-panel" id="main-scanner-panel">
+        <!-- Live TradingView Chart Hub -->
+        <div class="chart-container-wrapper" style="height: 100% !important;">
+          <div class="chart-header">
+            <span class="active-pair-lbl" id="active-pair-title"><i class="fa-solid fa-chart-line text-neon-green"></i> BTCUSD (15M Chart)</span>
+            <div class="chart-actions" style="display: flex; align-items: center; gap: 8px;">
+              <span class="chart-badge"><i class="fa-solid fa-circle-nodes"></i> TRADINGVIEW REALTIME FEED</span>
+              <button class="chart-btn" id="maximize-chart-btn" title="Maximize Chart">
+                <i class="fa-solid fa-expand"></i>
+              </button>
+            </div>
+          </div>
+          <div id="tradingview-chart-container" class="tradingview-chart-box">
+            <!-- TV widget will inject here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: AI Scanner and Narrative Outputs + Calculator -->
+      <aside class="panel right-panel" id="metrics-panel" style="overflow-y: auto; scrollbar-width: thin; gap: 10px;">
+        <div class="panel-header" style="flex-shrink: 0;">
+          <h2><i class="fa-solid fa-brain"></i> QUANTUM SCAN CORE</h2>
+          <span class="badge neon-border-purple">INFERENCE</span>
+        </div>
+
+        <div class="panel-content" style="display: flex; flex-direction: column; gap: 10px; padding: 10px;">
+          <!-- AI Scan Trigger Hub -->
+          <div class="scan-controller-card glass-panel" style="flex-shrink: 0;">
+            <div class="controller-left">
+              <h3>Quantum Inference</h3>
+              <p>Scan real-time market action</p>
+            </div>
+            <div class="controller-right">
+              <button class="quantum-scan-btn" id="run-analysis-btn">
+                <span class="scan-glow-ring"></span>
+                <span class="btn-content">
+                  <i class="fa-solid fa-radar-pulse animate-spin-slow"></i> ACTIVATE SCAN
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- AI Results Display Container -->
+          <div class="results-container glass-panel" id="results-display-wrapper" style="flex-shrink: 0; min-height: 380px;">
+            <!-- Idle / Initial State -->
+            <div class="results-idle" id="results-idle-state">
+              <div class="idle-graphics">
+                <i class="fa-solid fa-terminal radar-icon"></i>
+              </div>
+              <h4>TERMINAL AWAITING SIGNAL INFERENCE</h4>
+              <p>Select settings and click <strong>"ACTIVATE SCAN"</strong> to run calculations.</p>
+            </div>
+
+            <!-- Loading State with Scanning Radar Animation -->
+            <div class="results-loading hidden" id="results-loading-state">
+              <div class="radar-scan-box">
+                <div class="radar-line"></div>
+                <div class="radar-blip p1"></div>
+                <div class="radar-blip p2"></div>
+                <div class="radar-grid"></div>
+              </div>
+              <div class="loading-terminal-text" id="loading-status-text">
+                INITIALIZING DEEP ALGORITHMIC SCAN...
+              </div>
+              <div class="progress-bar-wrapper">
+                <div class="progress-fill" id="scan-progress-bar"></div>
+              </div>
+            </div>
+
+            <!-- Active Analysis Output State -->
+            <div class="results-active-layout hidden" id="results-output-state">
+              <div class="output-top-bar">
+                <div class="output-badges">
+                  <span class="out-badge pair-badge" id="output-pair-badge">PAIR: BTC/USD</span>
+                  <span class="out-badge tf-badge" id="output-tf-badge">TIMEFRAME: 15M</span>
+                  <span class="out-badge mode-badge" id="output-mode-badge">MODE: INTRADAY</span>
+                </div>
+                <div class="bias-indicator-badge bearish" id="output-bias-badge">
+                  <i class="fa-solid fa-arrow-trend-down"></i> <span id="output-bias-text">BEARISH</span>
+                </div>
+              </div>
+
+              <!-- Signal Targets Grid -->
+              <div class="signal-targets-grid">
+                <div class="sig-target-card entry">
+                  <div class="tgt-lbl">SCAN ENTRY TRIGGER</div>
+                  <div class="tgt-val" id="output-entry-price">--.--</div>
+                  <div class="tgt-desc">Aggressive OB Mitigation</div>
+                </div>
+                
+                <div class="sig-target-card invalidation">
+                  <div class="tgt-lbl">STOP LOSS / INVALIDATION</div>
+                  <div class="tgt-val" id="output-sl-price">--.--</div>
+                  <div class="tgt-desc" id="output-sl-details">Above structural fractal high</div>
+                </div>
+              </div>
+
+              <!-- Take Profits List -->
+              <div class="take-profits-container">
+                <h4>ALGORITHMIC TARGET SPECIFICATION (TAKE PROFIT)</h4>
+                <div class="tp-grid">
+                  <div class="tp-item">
+                    <div class="tp-top">
+                      <span>TARGET 1 (Conservative)</span>
+                      <span class="tp-pct" id="output-tp1-pct">--.--%</span>
+                    </div>
+                    <div class="tp-val" id="output-tp1-price">--.--</div>
+                  </div>
+
+                  <div class="tp-item">
+                    <div class="tp-top">
+                      <span>TARGET 2 (Intraday Extension)</span>
+                      <span class="tp-pct" id="output-tp2-pct">--.--%</span>
+                    </div>
+                    <div class="tp-val" id="output-tp2-price">--.--</div>
+                  </div>
+
+                  <div class="tp-item">
+                    <div class="tp-top">
+                      <span>TARGET 3 (Macro Trend Rider)</span>
+                      <span class="tp-pct" id="output-tp3-pct">--.--%</span>
+                    </div>
+                    <div class="tp-val" id="output-tp3-price">--.--</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mathematical Metrics Metrics -->
+              <div class="confluence-metrics-row">
+                <div class="radial-progress-box">
+                  <svg class="radial-svg" viewBox="0 0 36 36">
+                    <path class="radial-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                    <path class="radial-fill" id="radial-progress-fill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                  </svg>
+                  <div class="radial-lbl" id="output-confidence-val">--%</div>
+                  <div class="radial-desc">CONFIDENCE</div>
+                </div>
+
+                <div class="text-metrics-grid">
+                  <div class="txt-metric-item">
+                    <span class="tm-lbl">RISK TO REWARD</span>
+                    <strong id="output-rr-val">1:--</strong>
+                  </div>
+                  <div class="txt-metric-item">
+                    <span class="tm-lbl">SUCCESS ODDS</span>
+                    <strong id="output-success-probability">--%</strong>
+                  </div>
+                  <div class="txt-metric-item">
+                    <span class="tm-lbl">SUGGESTED RISK</span>
+                    <strong id="output-leverage-risk">--%</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quantum Core Insights -->
+              <div class="quantum-confluences-wrapper">
+                <h4>QUANTUM CONFLUENCES</h4>
+                <div class="confluence-indicators-grid">
+                  <div class="conf-badge">
+                    <i class="fa-solid fa-water-ladder"></i> Vol: <span id="output-vol-status">--</span>
+                  </div>
+                  <div class="conf-badge">
+                    <i class="fa-solid fa-filter"></i> News: <span id="output-news-filtered">--</span>
+                  </div>
+                  <div class="conf-badge">
+                    <i class="fa-solid fa-diagram-project"></i> Structure: <span id="output-structure-text">--</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quantitative Narrative Report -->
+              <div class="analysis-narrative-box">
+                <h4>DEEP STRUCTURAL NARRATIVE HIGHLIGHTS</h4>
+                <div class="narrative-content" id="output-analysis-narrative">
+                  <!-- Rich details will inject here -->
+                </div>
+              </div>
+              
+              <div class="output-disclaimer">
+                <i class="fa-solid fa-triangle-exclamation"></i> <strong>RISK WARNING:</strong> Highly speculative market conditions. Trade size must respect risk thresholds.
+              </div>
+            </div>
+          </div>
+
+          <!-- Prop Position Size and Risk Calculator -->
+          <div class="widget-box glass-panel" style="flex-shrink: 0; margin-top: 5px;">
+            <div class="widget-header">
+              <h3><i class="fa-solid fa-calculator"></i> RISK MANAGEMENT</h3>
+              <span class="lbl-indicator">PROP TRADER</span>
+            </div>
+            <div class="widget-content">
+              <div class="risk-calc-box">
+                <div class="calc-row">
+                  <label for="calc-balance">ACCOUNT BALANCE ($)</label>
+                  <input type="number" id="calc-balance" value="10000" min="100" step="100">
+                </div>
+                
+                <div class="calc-row">
+                  <label for="calc-risk-pct">DESIRED RISK (%)</label>
+                  <input type="number" id="calc-risk-pct" value="1.0" min="0.1" max="5.0" step="0.1">
+                </div>
+
+                <div class="calc-results">
+                  <div class="calc-res-item">
+                    <div class="calc-res-lbl">MAX RISK ($)</div>
+                    <div class="calc-res-val" id="calc-res-risk-amt">$100.00</div>
+                  </div>
+                  
+                  <div class="calc-res-item">
+                    <div class="calc-res-lbl">POSITION SIZE (LOTS / UNITS)</div>
+                    <div class="calc-res-val font-green" id="calc-res-pos-size">--.--</div>
+                  </div>
+
+                  <div class="calc-res-item">
+                    <div class="calc-res-lbl">SUGGESTED PROP LEVERAGE</div>
+                    <div class="calc-res-val font-purple" id="calc-res-lev">--x</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Terminal Footer -->
+    <footer class="terminal-footer">
+      <div class="footer-left">
+        <span class="blink-cursor">></span>
+        <span id="terminal-command-line">AURA CRYPTO & FX AI v2.8.5: Connection established. Waiting for algorithmic inputs...</span>
+      </div>
+      <div class="footer-right">
+        <span>DEVELOPED BY <strong class="neon-purple" style="letter-spacing: 0.5px;">@ STARICO</strong></span>
+        <span id="admin-trigger" style="cursor: pointer;" title="Open Admin Overrides">SYSTEM: <strong class="neon-purple">ANTIGRAVITY</strong></span>
+        <span>LATENCY: <strong id="latency-val">42ms</strong></span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Admin Authentication Gate -->
+  <div id="admin-login" class="admin-overlay hidden">
+    <div class="admin-login-modal glass-panel">
+      <div class="admin-login-header">
+        <div class="login-shield-icon">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h3>RESTRICTED ACCESS</h3>
+        <p class="login-subtitle">AURA BACKEND CONSOLE // IDENTITY VERIFICATION REQUIRED</p>
+      </div>
+      <div class="admin-login-body">
+        <div class="login-field">
+          <label for="admin-username"><i class="fa-solid fa-user"></i> USERNAME</label>
+          <input type="text" id="admin-username" placeholder="Enter admin username" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="login-field">
+          <label for="admin-password"><i class="fa-solid fa-lock"></i> PASSWORD</label>
+          <input type="password" id="admin-password" placeholder="Enter secure passkey" autocomplete="off">
+        </div>
+        <div id="login-error" class="login-error hidden">
+          <i class="fa-solid fa-circle-xmark"></i> <span id="login-error-text">Invalid credentials. Access denied.</span>
+        </div>
+        <button id="admin-login-btn" class="admin-login-submit">
+          <i class="fa-solid fa-fingerprint"></i> AUTHENTICATE
+        </button>
+      </div>
+      <div class="admin-login-footer">
+        <span class="pulse-dot red"></span> ENCRYPTED CHANNEL // ZERO-TRUST VERIFICATION
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Admin Page Overlay -->
+  <div id="admin-panel" class="admin-overlay hidden">
+    <div class="admin-modal glass-panel">
+      <div class="admin-header">
+        <h3><i class="fa-solid fa-user-shield text-neon-green"></i> AURA SYSTEM ADMIN // BACKEND OVERRIDES</h3>
+        <button id="close-admin-btn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <div class="admin-body">
+        <!-- Sidebar Navigation -->
+        <div class="admin-nav">
+          <button class="admin-nav-btn active" data-tab="engine"><i class="fa-solid fa-gears"></i> Engine Overrides</button>
+          <button class="admin-nav-btn" data-tab="status"><i class="fa-solid fa-server"></i> System Status</button>
+          <button class="admin-nav-btn" data-tab="tickers"><i class="fa-solid fa-arrow-trend-up"></i> Ticker Control</button>
+          <button class="admin-nav-btn" data-tab="subscriptions"><i class="fa-solid fa-crown"></i> Subscriptions</button>
+        </div>
+        
+        <!-- Tab Contents -->
+        <div class="admin-tab-container">
+          <!-- Engine Tab -->
+          <div class="admin-tab-content active" id="tab-engine">
+            <div class="admin-row">
+              <label>FORCE MARKET BIAS</label>
+              <select id="admin-force-bias">
+                <option value="auto">Algorithmic (Default)</option>
+                <option value="bullish">Force Bullish</option>
+                <option value="bearish">Force Bearish</option>
+              </select>
+            </div>
+            <div class="admin-row">
+              <label>CONFIDENCE SCORE MULTIPLIER</label>
+              <input type="range" id="admin-confidence-mult" min="0.5" max="1.5" step="0.1" value="1.0">
+              <span class="range-val" id="confidence-mult-val">1.0x</span>
+            </div>
+            <div class="admin-row">
+              <label>VOLATILITY AMPLIFIER (ATR)</label>
+              <select id="admin-force-vol">
+                <option value="auto">Algorithmic (Default)</option>
+                <option value="high">Force High Volatility</option>
+                <option value="low">Force Low Volatility</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Status Tab -->
+          <div class="admin-tab-content" id="tab-status">
+            <div class="admin-row">
+              <label>SYSTEM OVERALL STATUS</label>
+              <select id="admin-system-status">
+                <option value="online">Online & Synced</option>
+                <option value="latency">High Latency Simulation</option>
+                <option value="offline">Offline / Reconnecting</option>
+              </select>
+            </div>
+            <div class="admin-row">
+              <label>MOCK EVENT RELEASE</label>
+              <button id="admin-trigger-fomc" class="admin-action-btn"><i class="fa-solid fa-circle-exclamation"></i> Trigger FOMC Spike</button>
+            </div>
+          </div>
+          
+          <!-- Tickers Tab -->
+          <div class="admin-tab-content" id="tab-tickers">
+            <div class="admin-row">
+              <label>FORCE BTC PRICE ($)</label>
+              <input type="number" id="admin-btc-price" placeholder="e.g. 96500">
+            </div>
+            <div class="admin-row">
+              <label>FORCE GOLD PRICE ($)</label>
+              <input type="number" id="admin-gold-price" placeholder="e.g. 2350">
+            </div>
+            <div class="admin-row">
+              <button id="admin-apply-prices" class="admin-action-btn"><i class="fa-solid fa-bolt"></i> Push Price Overrides</button>
+            </div>
+          </div>
+          
+          <!-- Subscriptions Tab -->
+          <div class="admin-tab-content" id="tab-subscriptions">
+            <div class="admin-row">
+              <label>FORCE PREMIUM MEMBERSHIP</label>
+              <select id="admin-premium-toggle">
+                <option value="inactive">Inactive / Free Tier</option>
+                <option value="active">Active Premium</option>
+              </select>
+            </div>
+            <div class="admin-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
+              <label>SIMULATED MEMBERSHIP METRICS</label>
+              <div class="admin-metrics-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div class="admin-metric-card" style="background: rgba(255,255,255,0.02); padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; text-align: center;">
+                  <div style="font-size: 8px; color: var(--text-muted);">ACTIVE USERS</div>
+                  <strong id="admin-metrics-users" style="font-size: 14px; font-family: var(--font-mono); color: var(--neon-cyan);">1,284</strong>
+                </div>
+                <div class="admin-metric-card" style="background: rgba(255,255,255,0.02); padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; text-align: center;">
+                  <div style="font-size: 8px; color: var(--text-muted);">MOCK MRR</div>
+                  <strong id="admin-metrics-mrr" style="font-size: 14px; font-family: var(--font-mono); color: var(--neon-bull);">$12,840</strong>
+                </div>
+              </div>
+            </div>
+            <div class="admin-row" style="flex-direction: column; align-items: stretch; gap: 6px;">
+              <label>RECENT PAYMENT GATEWAY LOGS</label>
+              <div id="admin-payment-logs" style="max-height: 120px; overflow-y: auto; font-family: var(--font-mono); font-size: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); padding: 6px; border-radius: 4px; display: flex; flex-direction: column; gap: 4px;">
+                <!-- Payment logs inject here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="admin-footer">
+        <span class="admin-status-bar"><span class="pulse-dot green"></span> ADMIN CONNECTION: EXCLUSIVE SECURE LINK</span>
+        <button id="save-admin-btn" class="admin-save-btn">APPLY CONFIGURATION</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Premium Subscription Overlay / Paywall -->
+  <div id="premium-paywall" class="admin-overlay hidden">
+    <div class="premium-modal glass-panel">
+      <div class="premium-header">
+        <div class="premium-crown-icon">
+          <i class="fa-solid fa-crown"></i>
+        </div>
+        <h3>UPGRADE TO PREMIUM</h3>
+        <p class="premium-subtitle">UNLOCK INSTANT MARKET EDGE // UNLIMITED QUANTUM INFERENCES</p>
+        <button id="close-premium-btn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <div class="premium-body">
+        <!-- Feature Highlights -->
+        <div class="premium-features-list">
+          <div class="prem-feature-item">
+            <i class="fa-solid fa-circle-check text-neon-purple"></i>
+            <span><strong>Swing Trading Mode:</strong> Multi-day macro direction scans</span>
+          </div>
+          <div class="prem-feature-item">
+            <i class="fa-solid fa-circle-check text-neon-purple"></i>
+            <span><strong>Premium Assets:</strong> Gold Spot (XAU), GBPUSD, USDJPY</span>
+          </div>
+          <div class="prem-feature-item">
+            <i class="fa-solid fa-circle-check text-neon-purple"></i>
+            <span><strong>Priority AI Feed:</strong> Real-time indicator confluences</span>
+          </div>
+        </div>
+
+        <div class="premium-price-tag">
+          <span class="original-price">$49.99</span>
+          <span class="discounted-price">$29.99<span class="price-period">/month</span></span>
+        </div>
+
+        <!-- Payment Tabs Selector -->
+        <div class="payment-tabs-nav">
+          <button class="pay-tab-btn active" data-gateway="mpesa">
+            <i class="fa-solid fa-mobile-screen-button"></i> M-PESA
+          </button>
+          <button class="pay-tab-btn" data-gateway="paypal">
+            <i class="fa-brands fa-paypal"></i> PAYPAL
+          </button>
+          <button class="pay-tab-btn" data-gateway="crypto">
+            <i class="fa-solid fa-coins"></i> CRYPTO
+          </button>
+        </div>
+
+        <!-- Gateway Contents -->
+        <div class="gateway-tab-container">
+          <!-- M-PESA Gateway Content -->
+          <div class="gateway-content active" id="pay-mpesa">
+            <div class="pay-field">
+              <label for="mpesa-phone"><i class="fa-solid fa-phone"></i> SAFARICOM PHONE NUMBER</label>
+              <input type="text" id="mpesa-phone" placeholder="e.g. 0712345678" autocomplete="off">
+            </div>
+            <button id="mpesa-submit-btn" class="payment-submit-btn mpesa-theme">
+              <i class="fa-solid fa-paper-plane"></i> SEND STK PUSH
+            </button>
+            <div id="mpesa-status-box" class="payment-status-message hidden">
+              <i class="fa-solid fa-spinner fa-spin"></i> Sending STK push prompt...
+            </div>
+          </div>
+
+          <!-- PAYPAL Gateway Content -->
+          <div class="gateway-content" id="pay-paypal">
+            <p style="font-size: 10px; color: var(--text-muted); margin-bottom: 12px; font-family: var(--font-mono); text-align: center;">
+              Authenticate secure checkout via PayPal express routing.
+            </p>
+            <button id="paypal-submit-btn" class="payment-submit-btn paypal-theme">
+              <i class="fa-brands fa-paypal"></i> PAY WITH PAYPAL
+            </button>
+            <div id="paypal-status-box" class="payment-status-message hidden">
+              <i class="fa-solid fa-spinner fa-spin"></i> Routing to PayPal authentication window...
+            </div>
+          </div>
+
+          <!-- CRYPTO Gateway Content -->
+          <div class="gateway-content" id="pay-crypto">
+            <div class="crypto-details-box" style="display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 10px;">
+              <div class="qr-mock" style="width: 55px; height: 55px; background: #fff; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); width: 100%; height: 100%; gap: 2px;">
+                  <div style="background:#000;"></div><div style="background:#000;"></div><div style="background:#fff;"></div><div style="background:#000;"></div><div style="background:#000;"></div>
+                  <div style="background:#000;"></div><div style="background:#fff;"></div><div style="background:#000;"></div><div style="background:#fff;"></div><div style="background:#000;"></div>
+                  <div style="background:#fff;"></div><div style="background:#000;"></div><div style="background:#fff;"></div><div style="background:#000;"></div><div style="background:#fff;"></div>
+                  <div style="background:#000;"></div><div style="background:#fff;"></div><div style="background:#000;"></div><div style="background:#fff;"></div><div style="background:#000;"></div>
+                  <div style="background:#000;"></div><div style="background:#000;"></div><div style="background:#fff;"></div><div style="background:#000;"></div><div style="background:#000;"></div>
+                </div>
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 8px; color: var(--text-muted); font-family: var(--font-mono);">SEND 30.00 USDT (ERC-20 / TRC-20)</div>
+                <div class="wallet-copy-row" style="display: flex; gap: 4px; align-items: center; margin-top: 3px;">
+                  <input type="text" id="crypto-wallet-addr" value="0x7a8d9bF82e4caf1bc71904048851eC6e9e8c79dB" readonly style="flex:1; font-family:var(--font-mono); font-size:9px; background:rgba(0,0,0,0.5); color:#fff; border:none; padding:4px; border-radius:3px; text-align:center;">
+                  <button id="copy-wallet-btn" style="background:var(--neon-purple); border:none; color:#fff; padding:4px 6px; border-radius:3px; cursor:pointer; font-size:9px;" title="Copy Address"><i class="fa-solid fa-copy"></i></button>
+                </div>
+              </div>
+            </div>
+            <div class="pay-field">
+              <label for="crypto-txid"><i class="fa-solid fa-hashtag"></i> TRANSACTION ID / HASH (TXID)</label>
+              <input type="text" id="crypto-txid" placeholder="Enter transaction TXID to verify" autocomplete="off">
+            </div>
+            <button id="crypto-submit-btn" class="payment-submit-btn crypto-theme">
+              <i class="fa-solid fa-circle-nodes"></i> VERIFY TRANSACTION
+            </button>
+            <div id="crypto-status-box" class="payment-status-message hidden">
+              <i class="fa-solid fa-spinner fa-spin"></i> Checking blockchain confirmations...
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="premium-footer">
+        <span class="premium-status-bar"><i class="fa-solid fa-lock-open text-neon-purple"></i> UPGRADE UNLOCKS LIFETIME SUPPORT & UPDATES</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Javascript Modules -->
+  <script src="dataService.js"></script>
+  <script src="analysisEngine.js"></script>
+  <script src="newsService.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
