@@ -42,6 +42,10 @@
   user-select: none;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: var(--bg-main);
   color: var(--text-main);
@@ -50,6 +54,7 @@ body {
   height: 100vh;
   width: 100vw;
   position: relative;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Background Glowing Orbs */
@@ -1744,32 +1749,46 @@ body {
 }
 
 @media (max-width: 992px) {
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
+    min-height: 100vh;
+  }
+
   #terminal-container {
     height: auto;
     min-height: 100vh;
     padding: 10px;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    overflow-y: visible;
+    scroll-behavior: smooth;
   }
 
   .terminal-body {
     grid-template-columns: 1fr;
-    overflow-y: visible;
+    overflow: visible;
     height: auto;
     gap: 15px;
+  }
+
+  .panel {
+    overflow: visible;
+    min-height: 0;
+  }
+
+  .center-panel {
+    overflow: visible;
+    height: 400px !important;
+    min-height: 350px;
+    flex-shrink: 0;
   }
 
   .left-panel,
   .right-panel {
     height: auto !important;
-    overflow-y: visible !important;
-  }
-
-  .center-panel {
-    height: 400px !important;
-    min-height: 350px;
-    flex-shrink: 0;
+    overflow: visible !important;
   }
 
   .chart-container-wrapper {
@@ -1777,6 +1796,7 @@ body {
   }
 
   .terminal-header {
+    display: flex;
     flex-direction: column;
     height: auto;
     padding: 15px 12px;
