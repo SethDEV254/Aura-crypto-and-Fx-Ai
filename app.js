@@ -200,6 +200,18 @@ document.addEventListener('DOMContentLoaded', () => {
      Initialization & Event Listeners
      ========================================================================== */
 
+  // Verify critical elements exist
+  console.log('[INIT] Verifying DOM elements...');
+  console.log('[INIT] runAnalysisBtn:', els.runAnalysisBtn ? '✅ Found' : '❌ NOT FOUND');
+  console.log('[INIT] resultsIdleState:', els.resultsIdleState ? '✅ Found' : '❌ NOT FOUND');
+  console.log('[INIT] resultsLoadingState:', els.resultsLoadingState ? '✅ Found' : '❌ NOT FOUND');
+  console.log('[INIT] resultsOutputState:', els.resultsOutputState ? '✅ Found' : '❌ NOT FOUND');
+  
+  if (!els.runAnalysisBtn) {
+    console.error('[INIT] ❌ CRITICAL: Run Analysis button not found!');
+    alert('ERROR: Scan button not found. Please refresh the page.');
+  }
+
   // Check Premium Status on Load - MANDATORY PAYWALL FOR NEW USERS
   checkPremiumStatusOnLoad();
 
@@ -332,6 +344,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Run AI Scan Button
     els.runAnalysisBtn.addEventListener('click', () => {
+      console.log('[BUTTON] RUN AI SCAN button clicked!');
+      console.log('[BUTTON] Current state:', {
+        symbol: state.selectedSymbol,
+        timeframe: state.selectedTimeframe,
+        mode: state.selectedMode,
+        premium: state.isPremiumActive
+      });
       triggerAIScanWorkflow();
     });
 
@@ -611,6 +630,10 @@ document.addEventListener('DOMContentLoaded', () => {
      ========================================================================== */
 
   async function triggerAIScanWorkflow() {
+    console.log('[SCAN] ========================================');
+    console.log('[SCAN] triggerAIScanWorkflow() CALLED');
+    console.log('[SCAN] ========================================');
+    
     // Disclaimer check removed - allow immediate scanning
     // Users can access disclaimer info in documentation
     
