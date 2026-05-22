@@ -662,6 +662,10 @@ ANALYSIS:
     
     return levels.slice(0, 5); // Return top 5 closest levels
   }
+  
+  /**
+   * Calculates EMA (Exponential Moving Average)
+   */
   function calculateEMA(values, period) {
     const ema = [];
     const k = 2 / (period + 1);
