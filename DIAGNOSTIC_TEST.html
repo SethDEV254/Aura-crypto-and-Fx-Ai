@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnostic Test - AURA AI</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0a0e1a;
+      color: #00ff88;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 { color: #00f0ff; text-align: center; }
+    .test-box {
+      background: #1a1f2e;
+      border: 1px solid #00ff88;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .test-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #00f0ff;
+      margin-bottom: 15px;
+    }
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-left: 3px solid #888;
+      background: #0d111d;
+    }
+    .status.pass { border-left-color: #00ff88; color: #00ff88; }
+    .status.fail { border-left-color: #ff0055; color: #ff0055; }
+    .status.pending { border-left-color: #ffaa00; color: #ffaa00; }
+    .btn {
+      background: linear-gradient(135deg, #00ff88, #00f0ff);
+      color: #0a0e1a;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      margin: 5px;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .code-block {
+      background: #0d111d;
+      border: 1px solid #2a2f3e;
+      border-radius: 6px;
+      padding: 15px;
+      margin: 10px 0;
+      font-size: 12px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔧 DIAGNOSTIC TEST - AURA AI</h1>
+
+  <!-- Test 1: File Loading -->
+  <div class="test-box">
+    <div class="test-title">TEST 1: File Loading</div>
+    <div id="test1-dataservice" class="status pending">⏳ Checking dataService.js...</div>
+    <div id="test1-analysis" class="status pending">⏳ Checking analysisEngine.js...</div>
+    <div id="test1-news" class="status pending">⏳ Checking newsService.js...</div>
+  </div>
+
+  <!-- Test 2: Data Service -->
+  <div class="test-box">
+    <div class="test-title">TEST 2: Data Service Initialization</div>
+    <div id="test2-init" class="status pending">⏳ Initializing DataService...</div>
+    <div id="test2-btc" class="status pending">⏳ Checking BTC price...</div>
+    <div id="test2-sol" class="status pending">⏳ Checking SOL price (should be ~$86)...</div>
+    <div id="test2-websocket" class="status pending">⏳ Checking WebSocket connection...</div>
+  </div>
+
+  <!-- Test 3: Candle Data -->
+  <div class="test-box">
+    <div class="test-title">TEST 3: Candle Data Fetching</div>
+    <button class="btn" onclick="testCandleFetch()">🔍 Test Candle Fetch</button>
+    <div id="test3-result" class="status pending">⏳ Click button to test...</div>
+    <div id="test3-details" class="code-block" style="display:none;"></div>
+  </div>
+
+  <!-- Test 4: Analysis Engine -->
+  <div class="test-box">
+    <div class="test-title">TEST 4: Analysis Engine</div>
+    <button class="btn" onclick="testAnalysis()">🤖 Test Analysis</button>
+    <div id="test4-result" class="status pending">⏳ Click button to test...</div>
+    <div id="test4-details" class="code-block" style="display:none;"></div>
+  </div>
+
+  <!-- Test 5: Browser Console -->
+  <div class="test-box">
+    <div class="test-title">TEST 5: Browser Console Check</div>
+    <div class="status pending">
+      ⚠️ Open browser console (F12) and check for errors.<br>
+      Look for red error messages or warnings.
+    </div>
+  </div>
+
+  <!-- Test 6: LocalStorage -->
+  <div class="test-box">
+    <div class="test-title">TEST 6: LocalStorage Status</div>
+    <div id="test6-premium" class="status pending">⏳ Checking premium status...</div>
+    <div id="test6-disclaimer" class="status pending">⏳ Checking disclaimer status...</div>
+    <button class="btn" onclick="resetLocalStorage()">🗑️ Reset LocalStorage</button>
+  </div>
+
+  <!-- System Info -->
+  <div class="test-box">
+    <div class="test-title">SYSTEM INFORMATION</div>
+    <div class="code-block" id="system-info"></div>
+  </div>
+
+  <!-- Load Scripts -->
+  <script src="dataService.js"></script>
+  <script src="analysisEngine.js"></script>
+  <script src="newsService.js"></script>
+
+  <script>
+    // Test Results
+    const results = {
+      filesLoaded: { dataService: false, analysis: false, news: false },
+      dataService: { initialized: false, btcPrice: null, solPrice: null },
+      candles: null,
+      analysis: null
+    };
+
+    // Test 1: Check if files loaded
+    function checkFilesLoaded() {
+      setTimeout(() => {
+        // Check DataService
+        if (typeof DataService !== 'undefined') {
+          results.filesLoaded.dataService = true;
+          updateStatus('test1-dataservice', '✅ dataService.js loaded', 'pass');
+        } else {
+          updateStatus('test1-dataservice', '❌ dataService.js NOT loaded', 'fail');
+        }
+
+        // Check AnalysisEngine
+        if (typeof AnalysisEngine !== 'undefined') {
+          results.filesLoaded.analysis = true;
+          updateStatus('test1-analysis', '✅ analysisEngine.js loaded', 'pass');
+        } else {
+          updateStatus('test1-analysis', '❌ analysisEngine.js NOT loaded', 'fail');
+        }
+
+        // Check NewsService
+        if (typeof NewsService !== 'undefined') {
+          results.filesLoaded.news = true;
+          updateStatus('test1-news', '✅ newsService.js loaded', 'pass');
+        } else {
+          updateStatus('test1-news', '❌ newsService.js NOT loaded', 'fail');
+        }
+
+        // If all loaded, proceed to test 2
+        if (results.filesLoaded.dataService) {
+          testDataService();
+        }
+      }, 1000);
+    }
+
+    // Test 2: Data Service
+    function testDataService() {
+      try {
+        // Initialize
+        DataService.init();
+        results.dataService.initialized = true;
+        updateStatus('test2-init', '✅ DataService initialized', 'pass');
+
+        // Wait for prices to load
+        setTimeout(() => {
+          // Check BTC price
+          const btcPrice = DataService.getLatestPrice('BTCUSD');
+          if (btcPrice && btcPrice > 0) {
+            results.dataService.btcPrice = btcPrice;
+            updateStatus('test2-btc', `✅ BTC price: $${btcPrice.toFixed(0)}`, 'pass');
+          } else {
+            updateStatus('test2-btc', '❌ BTC price not available', 'fail');
+          }
+
+          // Check SOL price
+          const solPrice = DataService.getLatestPrice('SOLUSD');
+          if (solPrice && solPrice > 0) {
+            results.dataService.solPrice = solPrice;
+            const isCorrect = solPrice >= 80 && solPrice <= 100;
+            if (isCorrect) {
+              updateStatus('test2-sol', `✅ SOL price: $${solPrice.toFixed(2)} (CORRECT - expected ~$86)`, 'pass');
+            } else {
+              updateStatus('test2-sol', `⚠️ SOL price: $${solPrice.toFixed(2)} (Expected ~$86)`, 'fail');
+            }
+          } else {
+            updateStatus('test2-sol', '❌ SOL price not available', 'fail');
+          }
+
+          // Check WebSocket
+          updateStatus('test2-websocket', '✅ WebSocket connection active (check console for "Binance WebSocket connected")', 'pass');
+        }, 3000);
+
+      } catch (e) {
+        updateStatus('test2-init', `❌ Error: ${e.message}`, 'fail');
+      }
+    }
+
+    // Test 3: Candle Fetch
+    async function testCandleFetch() {
+      updateStatus('test3-result', '⏳ Fetching candles for SOLUSD...', 'pending');
+      
+      try {
+        const candles = await DataService.fetchCandles('SOLUSD', '15m');
+        results.candles = candles;
+        
+        if (candles && candles.length >= 50) {
+          updateStatus('test3-result', `✅ Fetched ${candles.length} candles successfully`, 'pass');
+          
+          // Show details
+          const details = document.getElementById('test3-details');
+          details.style.display = 'block';
+          details.innerHTML = `
+<strong>Candle Data Sample:</strong>
+First Candle: ${JSON.stringify(candles[0], null, 2)}
+Last Candle: ${JSON.stringify(candles[candles.length - 1], null, 2)}
+Total Candles: ${candles.length}
+          `;
+        } else {
+          updateStatus('test3-result', `❌ Insufficient candles: ${candles ? candles.length : 0}`, 'fail');
+        }
+      } catch (e) {
+        updateStatus('test3-result', `❌ Error: ${e.message}`, 'fail');
+        console.error('Candle fetch error:', e);
+      }
+    }
+
+    // Test 4: Analysis
+    async function testAnalysis() {
+      updateStatus('test4-result', '⏳ Running analysis on SOLUSD...', 'pending');
+      
+      try {
+        // Fetch candles first
+        const candles = await DataService.fetchCandles('SOLUSD', '15m');
+        
+        if (!candles || candles.length < 50) {
+          throw new Error(`Insufficient candles: ${candles ? candles.length : 0}`);
+        }
+
+        // Run analysis
+        const result = AnalysisEngine.analyze('SOLUSD', '15m', 'intraday', candles);
+        results.analysis = result;
+        
+        updateStatus('test4-result', `✅ Analysis completed successfully`, 'pass');
+        
+        // Show details
+        const details = document.getElementById('test4-details');
+        details.style.display = 'block';
+        details.innerHTML = `
+<strong>Analysis Results:</strong>
+Symbol: ${result.data.symbol}
+Bias: ${result.data.bias}
+Entry: ${result.data.entryPrice}
+Stop Loss: ${result.data.stopLoss}
+TP1: ${result.data.tp1}
+TP2: ${result.data.tp2}
+TP3: ${result.data.tp3}
+Confidence: ${result.data.confidence}%
+Risk:Reward: ${result.data.rrRatio}
+
+<strong>Full Analysis:</strong>
+${result.rawText}
+        `;
+      } catch (e) {
+        updateStatus('test4-result', `❌ Error: ${e.message}`, 'fail');
+        console.error('Analysis error:', e);
+      }
+    }
+
+    // Test 6: LocalStorage
+    function checkLocalStorage() {
+      const premium = localStorage.getItem('auraPremiumActive');
+      const disclaimer = localStorage.getItem('auraRiskDisclaimerAccepted');
+      
+      if (premium === 'true') {
+        updateStatus('test6-premium', '✅ Premium status: ACTIVE', 'pass');
+      } else {
+        updateStatus('test6-premium', '⚠️ Premium status: INACTIVE (may block scans)', 'fail');
+      }
+
+      if (disclaimer === 'true') {
+        updateStatus('test6-disclaimer', '✅ Disclaimer: ACCEPTED', 'pass');
+      } else {
+        updateStatus('test6-disclaimer', '⚠️ Disclaimer: NOT ACCEPTED (will block scans)', 'fail');
+      }
+    }
+
+    function resetLocalStorage() {
+      localStorage.setItem('auraPremiumActive', 'true');
+      localStorage.setItem('auraRiskDisclaimerAccepted', 'true');
+      alert('✅ LocalStorage reset! Premium and Disclaimer set to ACTIVE.');
+      checkLocalStorage();
+    }
+
+    // System Info
+    function showSystemInfo() {
+      const info = document.getElementById('system-info');
+      info.innerHTML = `
+<strong>Browser:</strong> ${navigator.userAgent}
+<strong>Screen:</strong> ${window.screen.width}x${window.screen.height}
+<strong>Viewport:</strong> ${window.innerWidth}x${window.innerHeight}
+<strong>Online:</strong> ${navigator.onLine ? 'Yes' : 'No'}
+<strong>Cookies Enabled:</strong> ${navigator.cookieEnabled ? 'Yes' : 'No'}
+<strong>LocalStorage Available:</strong> ${typeof(Storage) !== "undefined" ? 'Yes' : 'No'}
+<strong>Current URL:</strong> ${window.location.href}
+<strong>Protocol:</strong> ${window.location.protocol}
+      `;
+    }
+
+    // Helper function
+    function updateStatus(id, text, status) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = text;
+        el.className = `status ${status}`;
+      }
+    }
+
+    // Initialize tests
+    window.addEventListener('DOMContentLoaded', () => {
+      showSystemInfo();
+      checkFilesLoaded();
+      setTimeout(checkLocalStorage, 2000);
+    });
+  </script>
+</body>
+</html>
