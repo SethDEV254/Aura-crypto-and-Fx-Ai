@@ -13,13 +13,13 @@ const DataService = (() => {
   let forexUpdateInterval = null;
   const tickerCallbacks = {};
   const currentPrices = {
-    BTCUSD: { price: 0, change: 0, prevPrice: 0 },
-    ETHUSD: { price: 0, change: 0, prevPrice: 0 },
-    SOLUSD: { price: 0, change: 0, prevPrice: 0 },
-    XAUUSD: { price: 0, change: 0, prevPrice: 0 },
-    EURUSD: { price: 0, change: 0, prevPrice: 0 },
-    GBPUSD: { price: 0, change: 0, prevPrice: 0 },
-    USDJPY: { price: 0, change: 0, prevPrice: 0 }
+    BTCUSD: { price: 65000, change: 0, prevPrice: 65000 },
+    ETHUSD: { price: 3400, change: 0, prevPrice: 3400 },
+    SOLUSD: { price: 170, change: 0, prevPrice: 170 },
+    XAUUSD: { price: 2650, change: 0, prevPrice: 2650 },
+    EURUSD: { price: 1.0845, change: 0, prevPrice: 1.0845 },
+    GBPUSD: { price: 1.2582, change: 0, prevPrice: 1.2582 },
+    USDJPY: { price: 155.65, change: 0, prevPrice: 155.65 }
   };
 
   // Maps internal symbols to Binance pair names
@@ -93,15 +93,27 @@ const DataService = (() => {
    * Fetches real forex prices from a free API that provides TradingView-compatible data
    */
   async function initForexPrices() {
+    // Fetch Gold from Binance
     try {
-      // Using Binance for Gold (XAUUSDT as proxy for XAUUSD)
       const goldResponse = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=XAUUSDT');
       if (goldResponse.ok) {
         const goldData = await goldResponse.json();
-        updatePrice('XAUUSD', parseFloat(goldData.lastPrice), parseFloat(goldData.priceChangePercent));
+        const goldPrice = parseFloat(goldData.lastPrice);
+        const goldChange = parseFloat(goldData.priceChangePercent);
+        
+        if (goldPrice > 0) {
+          updatePrice('XAUUSD', goldPrice, goldChange);
+          console.log('Gold price updated:', goldPrice);
+        }
+      } else {
+        console.warn('Failed to fetch Gold price, status:', goldResponse.status);
       }
     } catch (e) {
       console.warn('Failed to fetch Gold price:', e);
+      // Use fallback for gold if API fails
+      if (currentPrices.XAUUSD.price === 2650) {
+        fallbackForexSimulation();
+      }
     }
 
     // Fetch forex rates using exchangerate-api (free tier)
@@ -113,24 +125,24 @@ const DataService = (() => {
         // Calculate EUR/USD (inverse of USD/EUR)
         if (data.rates.EUR) {
           const eurUsd = 1 / data.rates.EUR;
-          const prevEur = currentPrices.EURUSD.price || eurUsd;
-          const eurChange = ((eurUsd - prevEur) / prevEur) * 100;
+          const prevEur = currentPrices.EURUSD.price;
+          const eurChange = prevEur > 0 ? ((eurUsd - prevEur) / prevEur) * 100 : 0;
           updatePrice('EURUSD', eurUsd, eurChange);
         }
         
         // Calculate GBP/USD (inverse of USD/GBP)
         if (data.rates.GBP) {
           const gbpUsd = 1 / data.rates.GBP;
-          const prevGbp = currentPrices.GBPUSD.price || gbpUsd;
-          const gbpChange = ((gbpUsd - prevGbp) / prevGbp) * 100;
+          const prevGbp = currentPrices.GBPUSD.price;
+          const gbpChange = prevGbp > 0 ? ((gbpUsd - prevGbp) / prevGbp) * 100 : 0;
           updatePrice('GBPUSD', gbpUsd, gbpChange);
         }
         
         // USD/JPY is direct
         if (data.rates.JPY) {
           const usdJpy = data.rates.JPY;
-          const prevJpy = currentPrices.USDJPY.price || usdJpy;
-          const jpyChange = ((usdJpy - prevJpy) / prevJpy) * 100;
+          const prevJpy = currentPrices.USDJPY.price;
+          const jpyChange = prevJpy > 0 ? ((usdJpy - prevJpy) / prevJpy) * 100 : 0;
           updatePrice('USDJPY', usdJpy, jpyChange);
         }
       }
@@ -149,28 +161,19 @@ const DataService = (() => {
     
     forexSymbols.forEach(symbol => {
       const current = currentPrices[symbol];
-      if (current.price === 0) {
-        // Initialize with realistic values
-        const defaults = {
-          XAUUSD: 2650.00,
-          EURUSD: 1.08450,
-          GBPUSD: 1.25820,
-          USDJPY: 155.650
-        };
-        current.price = defaults[symbol];
-        current.prevPrice = defaults[symbol];
-        current.change = 0;
+      
+      // Only simulate if we have a valid starting price
+      if (current.price > 0) {
+        // Standard random walk
+        const volatility = symbol === 'XAUUSD' ? 0.35 : 0.00012;
+        const direction = Math.random() > 0.49 ? 1 : -1;
+        const changeAmt = Math.random() * volatility * direction;
+        
+        const nextPrice = Math.max(0.001, current.price + changeAmt);
+        const nextChange = current.change + (Math.random() > 0.5 ? 0.01 : -0.01) * direction;
+        
+        updatePrice(symbol, nextPrice, parseFloat(nextChange.toFixed(2)));
       }
-      
-      // Standard random walk
-      const volatility = symbol === 'XAUUSD' ? 0.35 : 0.00012;
-      const direction = Math.random() > 0.49 ? 1 : -1;
-      const changeAmt = Math.random() * volatility * direction;
-      
-      const nextPrice = Math.max(0.001, current.price + changeAmt);
-      const nextChange = current.change + (Math.random() > 0.5 ? 0.01 : -0.01) * direction;
-      
-      updatePrice(symbol, nextPrice, parseFloat(nextChange.toFixed(2)));
     });
   }
 
