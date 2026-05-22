@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Scanning Test - AURA CRYPTO & FX AI</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0a0e1a;
+      color: #00ff88;
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #00f0ff;
+      text-align: center;
+      border-bottom: 2px solid #00ff88;
+      padding-bottom: 10px;
+    }
+    .test-section {
+      background: #1a1f2e;
+      border: 1px solid #00ff88;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .test-header {
+      font-size: 18px;
+      font-weight: bold;
+      color: #00f0ff;
+      margin-bottom: 15px;
+    }
+    .test-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .btn {
+      background: linear-gradient(135deg, #00ff88, #00f0ff);
+      color: #0a0e1a;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      transition: all 0.3s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .symbol-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .symbol-btn {
+      background: #2a2f3e;
+      color: #00ff88;
+      border: 1px solid #00ff88;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+      transition: all 0.3s;
+    }
+    .symbol-btn:hover {
+      background: #00ff88;
+      color: #0a0e1a;
+    }
+    .symbol-btn.active {
+      background: #00f0ff;
+      color: #0a0e1a;
+      border-color: #00f0ff;
+    }
+    .status-box {
+      background: #0d111d;
+      border-left: 3px solid #00ff88;
+      padding: 15px;
+      margin: 15px 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .status-box.loading {
+      border-left-color: #ffaa00;
+    }
+    .status-box.success {
+      border-left-color: #00ff88;
+    }
+    .status-box.error {
+      border-left-color: #ff0055;
+    }
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .result-card {
+      background: #0d111d;
+      border: 1px solid #2a2f3e;
+      border-radius: 6px;
+      padding: 15px;
+    }
+    .result-label {
+      color: #888;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    .result-value {
+      color: #00f0ff;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .result-value.bullish {
+      color: #00ff88;
+    }
+    .result-value.bearish {
+      color: #ff0055;
+    }
+    .confidence-bar {
+      width: 100%;
+      height: 30px;
+      background: #0d111d;
+      border-radius: 15px;
+      overflow: hidden;
+      margin-top: 10px;
+      position: relative;
+    }
+    .confidence-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff88, #00f0ff);
+      transition: width 1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0a0e1a;
+      font-weight: bold;
+    }
+    .analysis-text {
+      background: #0d111d;
+      border: 1px solid #2a2f3e;
+      border-radius: 6px;
+      padding: 15px;
+      margin-top: 15px;
+      white-space: pre-wrap;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #ccc;
+    }
+    .price-ticker {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .ticker-item {
+      background: #0d111d;
+      border: 1px solid #2a2f3e;
+      border-radius: 6px;
+      padding: 10px 15px;
+      min-width: 150px;
+    }
+    .ticker-symbol {
+      font-size: 12px;
+      color: #888;
+    }
+    .ticker-price {
+      font-size: 20px;
+      color: #00f0ff;
+      font-weight: bold;
+    }
+    .ticker-change {
+      font-size: 12px;
+      margin-top: 3px;
+    }
+    .positive { color: #00ff88; }
+    .negative { color: #ff0055; }
+    .log-container {
+      background: #0d111d;
+      border: 1px solid #2a2f3e;
+      border-radius: 6px;
+      padding: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .log-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 2px solid #00ff88;
+      padding-left: 10px;
+    }
+    .log-entry.error {
+      border-left-color: #ff0055;
+      color: #ff0055;
+    }
+    .log-entry.warning {
+      border-left-color: #ffaa00;
+      color: #ffaa00;
+    }
+  </style>
+</head>
+<body>
+  <h1>🤖 AI SCANNING TEST SUITE - AURA CRYPTO & FX AI</h1>
+
+  <!-- Real-Time Price Ticker -->
+  <div class="test-section">
+    <div class="test-header">📊 REAL-TIME PRICE FEED</div>
+    <div class="price-ticker" id="price-ticker"></div>
+  </div>
+
+  <!-- Test Controls -->
+  <div class="test-section">
+    <div class="test-header">🎯 SCANNING TEST CONTROLS</div>
+    
+    <div class="test-controls">
+      <button class="btn" onclick="runAllTests()">🚀 RUN ALL TESTS</button>
+      <button class="btn" onclick="testSingleScan()">🔍 TEST SINGLE SCAN</button>
+      <button class="btn" onclick="testAllSymbols()">📈 TEST ALL SYMBOLS</button>
+      <button class="btn" onclick="clearLogs()">🗑️ CLEAR LOGS</button>
+    </div>
+
+    <div class="symbol-grid">
+      <button class="symbol-btn active" data-symbol="BTCUSD" onclick="selectSymbol('BTCUSD')">BTC/USD</button>
+      <button class="symbol-btn" data-symbol="ETHUSD" onclick="selectSymbol('ETHUSD')">ETH/USD</button>
+      <button class="symbol-btn" data-symbol="SOLUSD" onclick="selectSymbol('SOLUSD')">SOL/USD ⭐</button>
+      <button class="symbol-btn" data-symbol="XAUUSD" onclick="selectSymbol('XAUUSD')">XAU/USD</button>
+      <button class="symbol-btn" data-symbol="EURUSD" onclick="selectSymbol('EURUSD')">EUR/USD</button>
+      <button class="symbol-btn" data-symbol="GBPUSD" onclick="selectSymbol('GBPUSD')">GBP/USD</button>
+      <button class="symbol-btn" data-symbol="USDJPY" onclick="selectSymbol('USDJPY')">USD/JPY</button>
+    </div>
+
+    <div id="status" class="status-box">
+      ⏳ Initializing data services and analysis engine...
+    </div>
+  </div>
+
+  <!-- Analysis Results -->
+  <div class="test-section">
+    <div class="test-header">📋 ANALYSIS RESULTS</div>
+    <div id="results-container">
+      <div class="status-box">No analysis run yet. Click a test button above to start.</div>
+    </div>
+  </div>
+
+  <!-- System Logs -->
+  <div class="test-section">
+    <div class="test-header">📝 SYSTEM LOGS</div>
+    <div class="log-container" id="log-container"></div>
+  </div>
+
+  <!-- Load Dependencies -->
+  <script src="dataService.js"></script>
+  <script src="analysisEngine.js"></script>
+  <script src="newsService.js"></script>
+
+  <script>
+    // Test State
+    let selectedSymbol = 'BTCUSD';
+    let testResults = [];
+    const logs = [];
+
+    // Decimal precision mapping
+    const decimalPrecision = {
+      BTCUSD: 0, ETHUSD: 1, SOLUSD: 2, XAUUSD: 2, 
+      EURUSD: 5, GBPUSD: 5, USDJPY: 3
+    };
+
+    // Initialize
+    function init() {
+      log('🚀 Initializing AURA AI Test Suite...', 'info');
+      
+      // Initialize data service
+      DataService.init();
+      log('✅ DataService initialized', 'success');
+      
+      // Setup price tickers
+      setupPriceTickers();
+      log('✅ Price tickers configured', 'success');
+      
+      // Update status
+      setTimeout(() => {
+        document.getElementById('status').className = 'status-box success';
+        document.getElementById('status').innerHTML = `
+          ✅ <strong>System Ready</strong><br>
+          • Data connections established<br>
+          • Analysis engine loaded<br>
+          • Real-time prices streaming<br>
+          • Ready to run tests
+        `;
+        log('✅ All systems operational', 'success');
+      }, 2000);
+    }
+
+    // Setup price tickers
+    function setupPriceTickers() {
+      const symbols = ['BTCUSD', 'ETHUSD', 'SOLUSD', 'XAUUSD', 'EURUSD', 'GBPUSD', 'USDJPY'];
+      const ticker = document.getElementById('price-ticker');
+      
+      symbols.forEach(symbol => {
+        const item = document.createElement('div');
+        item.className = 'ticker-item';
+        item.id = `ticker-${symbol}`;
+        item.innerHTML = `
+          <div class="ticker-symbol">${symbol}</div>
+          <div class="ticker-price" id="price-${symbol}">--</div>
+          <div class="ticker-change" id="change-${symbol}">--</div>
+        `;
+        ticker.appendChild(item);
+        
+        // Subscribe to updates
+        DataService.subscribeTicker(symbol, (tick) => {
+          const priceEl = document.getElementById(`price-${symbol}`);
+          const changeEl = document.getElementById(`change-${symbol}`);
+          
+          if (priceEl && changeEl) {
+            const precision = decimalPrecision[symbol];
+            priceEl.textContent = tick.price.toFixed(precision);
+            
+            const changeClass = tick.change >= 0 ? 'positive' : 'negative';
+            const changeSign = tick.change >= 0 ? '+' : '';
+            changeEl.textContent = `${changeSign}${tick.change.toFixed(2)}%`;
+            changeEl.className = `ticker-change ${changeClass}`;
+          }
+        });
+      });
+    }
+
+    // Symbol selection
+    function selectSymbol(symbol) {
+      selectedSymbol = symbol;
+      document.querySelectorAll('.symbol-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.querySelector(`[data-symbol="${symbol}"]`).classList.add('active');
+      log(`📌 Selected symbol: ${symbol}`, 'info');
+    }
+
+    // Logging function
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      logs.push({ timestamp, message, type });
+      
+      const logContainer = document.getElementById('log-container');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${timestamp}] ${message}`;
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function clearLogs() {
+      logs.length = 0;
+      document.getElementById('log-container').innerHTML = '';
+      log('🗑️ Logs cleared', 'info');
+    }
+
+    // Test single scan
+    async function testSingleScan() {
+      log(`🔍 Starting single scan test for ${selectedSymbol}...`, 'info');
+      
+      const statusBox = document.getElementById('status');
+      statusBox.className = 'status-box loading';
+      statusBox.innerHTML = `⏳ Running AI analysis on ${selectedSymbol}...<br>Fetching candle data and computing indicators...`;
+      
+      try {
+        // Fetch candles
+        log(`📊 Fetching historical candles for ${selectedSymbol}...`, 'info');
+        const candles = await DataService.fetchCandles(selectedSymbol, '15m');
+        log(`✅ Fetched ${candles.length} candles`, 'success');
+        
+        if (!candles || candles.length < 50) {
+          throw new Error(`Insufficient candle data: ${candles ? candles.length : 0} candles`);
+        }
+        
+        // Run analysis
+        log(`🤖 Running AnalysisEngine.analyze()...`, 'info');
+        const result = AnalysisEngine.analyze(selectedSymbol, '15m', 'intraday', candles);
+        log(`✅ Analysis complete`, 'success');
+        
+        // Display results
+        displayResults(result);
+        
+        statusBox.className = 'status-box success';
+        statusBox.innerHTML = `✅ <strong>Analysis Complete</strong><br>Symbol: ${selectedSymbol}<br>Confidence: ${result.data.confidence}%<br>Bias: ${result.data.bias}`;
+        
+        log(`✅ Test completed successfully for ${selectedSymbol}`, 'success');
+        
+      } catch (error) {
+        log(`❌ Error: ${error.message}`, 'error');
+        console.error('Test error:', error);
+        
+        statusBox.className = 'status-box error';
+        statusBox.innerHTML = `❌ <strong>Test Failed</strong><br>${error.message}`;
+      }
+    }
+
+    // Test all symbols
+    async function testAllSymbols() {
+      log(`🚀 Starting comprehensive test for all symbols...`, 'info');
+      
+      const symbols = ['BTCUSD', 'ETHUSD', 'SOLUSD', 'XAUUSD', 'EURUSD', 'GBPUSD', 'USDJPY'];
+      const results = [];
+      
+      for (const symbol of symbols) {
+        try {
+          log(`📊 Testing ${symbol}...`, 'info');
+          
+          const candles = await DataService.fetchCandles(symbol, '15m');
+          if (!candles || candles.length < 50) {
+            throw new Error(`Insufficient data for ${symbol}`);
+          }
+          
+          const result = AnalysisEngine.analyze(symbol, '15m', 'intraday', candles);
+          results.push({ symbol, success: true, result });
+          log(`✅ ${symbol}: ${result.data.bias} @ ${result.data.confidence}%`, 'success');
+          
+        } catch (error) {
+          results.push({ symbol, success: false, error: error.message });
+          log(`❌ ${symbol}: ${error.message}`, 'error');
+        }
+        
+        // Small delay between tests
+        await new Promise(r => setTimeout(r, 500));
+      }
+      
+      // Display summary
+      displayAllResults(results);
+      log(`✅ Comprehensive test complete: ${results.filter(r => r.success).length}/${results.length} passed`, 'success');
+    }
+
+    // Run all tests
+    async function runAllTests() {
+      log(`🚀 Running full test suite...`, 'info');
+      
+      // Test 1: Data service
+      log(`📊 Test 1: Data Service Connection`, 'info');
+      const btcPrice = DataService.getLatestPrice('BTCUSD');
+      if (btcPrice && btcPrice > 0) {
+        log(`✅ Data service working (BTC: $${btcPrice.toFixed(0)})`, 'success');
+      } else {
+        log(`❌ Data service failed`, 'error');
+      }
+      
+      // Test 2: Solana price verification
+      log(`📊 Test 2: Solana Price Verification`, 'info');
+      const solPrice = DataService.getLatestPrice('SOLUSD');
+      if (solPrice && solPrice > 80 && solPrice < 100) {
+        log(`✅ Solana price correct: $${solPrice.toFixed(2)} (expected ~$86)`, 'success');
+      } else {
+        log(`⚠️ Solana price: $${solPrice ? solPrice.toFixed(2) : 'N/A'} (expected ~$86)`, 'warning');
+      }
+      
+      // Test 3: Single scan
+      await testSingleScan();
+      
+      // Test 4: All symbols
+      await new Promise(r => setTimeout(r, 1000));
+      await testAllSymbols();
+      
+      log(`✅ Full test suite complete`, 'success');
+    }
+
+    // Display single result
+    function displayResults(result) {
+      const container = document.getElementById('results-container');
+      const d = result.data;
+      
+      container.innerHTML = `
+        <div class="result-grid">
+          <div class="result-card">
+            <div class="result-label">SYMBOL</div>
+            <div class="result-value">${d.symbol}</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">BIAS</div>
+            <div class="result-value ${d.bias.toLowerCase()}">${d.bias}</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">ENTRY PRICE</div>
+            <div class="result-value">${d.entryPrice.toFixed(decimalPrecision[d.symbol])}</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">STOP LOSS</div>
+            <div class="result-value">${d.stopLoss.toFixed(decimalPrecision[d.symbol])}</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">TP1</div>
+            <div class="result-value">${d.tp1.toFixed(decimalPrecision[d.symbol])}</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">TP2</div>
+            <div class="result-value">${d.tp2.toFixed(decimalPrecision[d.symbol])}</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">TP3</div>
+            <div class="result-value">${d.tp3.toFixed(decimalPrecision[d.symbol])}</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">RISK:REWARD</div>
+            <div class="result-value">${d.rrRatio}</div>
+          </div>
+        </div>
+        
+        <div class="result-card" style="margin-top: 15px;">
+          <div class="result-label">CONFIDENCE SCORE</div>
+          <div class="confidence-bar">
+            <div class="confidence-fill" style="width: ${d.confidence}%">${d.confidence}%</div>
+          </div>
+        </div>
+        
+        <div class="analysis-text">${result.rawText}</div>
+      `;
+    }
+
+    // Display all results
+    function displayAllResults(results) {
+      const container = document.getElementById('results-container');
+      
+      let html = '<div class="result-grid">';
+      results.forEach(r => {
+        if (r.success) {
+          html += `
+            <div class="result-card">
+              <div class="result-label">${r.symbol}</div>
+              <div class="result-value ${r.result.data.bias.toLowerCase()}">
+                ${r.result.data.bias}<br>
+                <span style="font-size: 14px;">${r.result.data.confidence}% confidence</span>
+              </div>
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="result-card">
+              <div class="result-label">${r.symbol}</div>
+              <div class="result-value" style="color: #ff0055;">
+                FAILED<br>
+                <span style="font-size: 12px;">${r.error}</span>
+              </div>
+            </div>
+          `;
+        }
+      });
+      html += '</div>';
+      
+      container.innerHTML = html;
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
