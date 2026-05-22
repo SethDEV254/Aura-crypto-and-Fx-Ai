@@ -13,13 +13,13 @@ const DataService = (() => {
   let forexUpdateInterval = null;
   const tickerCallbacks = {};
   const currentPrices = {
-    BTCUSD: { price: 65000, change: 0, prevPrice: 65000 },
-    ETHUSD: { price: 3400, change: 0, prevPrice: 3400 },
+    BTCUSD: { price: 77200, change: 0, prevPrice: 77200 },
+    ETHUSD: { price: 2130, change: 0, prevPrice: 2130 },
     SOLUSD: { price: 170, change: 0, prevPrice: 170 },
-    XAUUSD: { price: 2650, change: 0, prevPrice: 2650 },
-    EURUSD: { price: 1.0845, change: 0, prevPrice: 1.0845 },
-    GBPUSD: { price: 1.2582, change: 0, prevPrice: 1.2582 },
-    USDJPY: { price: 155.65, change: 0, prevPrice: 155.65 }
+    XAUUSD: { price: 4500, change: 0, prevPrice: 4500 },
+    EURUSD: { price: 1.1624, change: 0, prevPrice: 1.1624 },
+    GBPUSD: { price: 1.3359, change: 0, prevPrice: 1.3359 },
+    USDJPY: { price: 150.25, change: 0, prevPrice: 150.25 }
   };
 
   // Maps internal symbols to Binance pair names
