@@ -163,7 +163,12 @@ document.addEventListener('DOMContentLoaded', () => {
     adminPremiumToggle: document.getElementById('admin-premium-toggle'),
     adminMetricsUsers: document.getElementById('admin-metrics-users'),
     adminMetricsMrr: document.getElementById('admin-metrics-mrr'),
-    adminPaymentLogs: document.getElementById('admin-payment-logs')
+    adminPaymentLogs: document.getElementById('admin-payment-logs'),
+
+    // Risk Disclaimer Modal
+    riskDisclaimerModal: document.getElementById('risk-disclaimer-modal'),
+    disclaimerAcceptCheckbox: document.getElementById('disclaimer-accept-checkbox'),
+    disclaimerAcceptBtn: document.getElementById('disclaimer-accept-btn')
   };
 
   // TradingView Symbol Mapping
@@ -197,6 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Check Premium Status on Load - MANDATORY PAYWALL FOR NEW USERS
   checkPremiumStatusOnLoad();
+
+  // Check Risk Disclaimer Acceptance
+  checkRiskDisclaimerStatus();
 
   // Initialize Services
   DataService.init();
@@ -1756,5 +1764,112 @@ document.addEventListener('DOMContentLoaded', () => {
       els.adminMetricsMrr.innerText = `$${state.premiumMrr.toLocaleString()}`;
     }
   }
+
+  /* ==========================================================================
+     Risk Disclaimer Modal Functions
+     ========================================================================== */
+
+  /**
+   * Check if user has accepted the risk disclaimer
+   * If not, show disclaimer modal before first analysis
+   */
+  function checkRiskDisclaimerStatus() {
+    const disclaimerAccepted = localStorage.getItem('auraRiskDisclaimerAccepted');
+    
+    if (disclaimerAccepted === 'true') {
+      // User has already accepted, no need to show again
+      return;
+    }
+    
+    // Bind disclaimer events
+    bindDisclaimerEvents();
+  }
+
+  /**
+   * Bind event listeners for disclaimer modal
+   */
+  function bindDisclaimerEvents() {
+    // Enable/disable accept button based on checkbox
+    if (els.disclaimerAcceptCheckbox) {
+      els.disclaimerAcceptCheckbox.addEventListener('change', (e) => {
+        if (els.disclaimerAcceptBtn) {
+          els.disclaimerAcceptBtn.disabled = !e.target.checked;
+        }
+      });
+    }
+
+    // Handle accept button click
+    if (els.disclaimerAcceptBtn) {
+      els.disclaimerAcceptBtn.addEventListener('click', () => {
+        acceptRiskDisclaimer();
+      });
+    }
+  }
+
+  /**
+   * Show the risk disclaimer modal
+   */
+  function showRiskDisclaimerModal() {
+    if (els.riskDisclaimerModal) {
+      els.riskDisclaimerModal.classList.remove('hidden');
+      els.terminalCommandLine.innerText = `AURA LEGAL: Please read and accept the risk disclaimer before running analysis.`;
+      
+      // Reset checkbox and button state
+      if (els.disclaimerAcceptCheckbox) {
+        els.disclaimerAcceptCheckbox.checked = false;
+      }
+      if (els.disclaimerAcceptBtn) {
+        els.disclaimerAcceptBtn.disabled = true;
+      }
+      
+      // Scroll to top of disclaimer content
+      const scrollContent = els.riskDisclaimerModal.querySelector('.disclaimer-scroll-content');
+      if (scrollContent) {
+        scrollContent.scrollTop = 0;
+      }
+    }
+  }
+
+  /**
+   * Accept the risk disclaimer and save to localStorage
+   */
+  function acceptRiskDisclaimer() {
+    // Save acceptance to localStorage
+    localStorage.setItem('auraRiskDisclaimerAccepted', 'true');
+    localStorage.setItem('auraRiskDisclaimerDate', new Date().toISOString());
+    
+    // Hide modal
+    if (els.riskDisclaimerModal) {
+      els.riskDisclaimerModal.classList.add('hidden');
+    }
+    
+    // Show confirmation
+    els.terminalCommandLine.innerText = `AURA LEGAL: Risk disclaimer accepted. You may now proceed with analysis.`;
+    flashTerminalConfirmation('DISCLAIMER ACCEPTED');
+    
+    // Automatically trigger the scan that was attempted
+    setTimeout(() => {
+      triggerAIScanWorkflow();
+    }, 500);
+  }
+
+  /**
+   * Override the triggerAIScanWorkflow to check disclaimer first
+   */
+  const originalTriggerAIScanWorkflow = triggerAIScanWorkflow;
+  
+  triggerAIScanWorkflow = function() {
+    // Check if disclaimer has been accepted
+    const disclaimerAccepted = localStorage.getItem('auraRiskDisclaimerAccepted');
+    
+    if (disclaimerAccepted !== 'true') {
+      // Show disclaimer modal first
+      showRiskDisclaimerModal();
+      return;
+    }
+    
+    // Proceed with original scan workflow
+    return originalTriggerAIScanWorkflow.apply(this, arguments);
+  };
 
 })();

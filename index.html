@@ -524,7 +524,7 @@
               </div>
               
               <div class="output-disclaimer">
-                <i class="fa-solid fa-triangle-exclamation"></i> <strong>RISK WARNING:</strong> Highly speculative market conditions. Trade size must respect risk thresholds.
+                <i class="fa-solid fa-triangle-exclamation"></i> <strong>RISK WARNING:</strong> Trading involves substantial risk of loss. 90% of retail traders lose money. This analysis is for educational purposes only and does not guarantee profits. Never risk more than you can afford to lose.
               </div>
             </div>
           </div>
@@ -842,6 +842,110 @@
       
       <div class="premium-footer">
         <span class="premium-status-bar"><i class="fa-solid fa-lock-open text-neon-purple"></i> UPGRADE UNLOCKS LIFETIME SUPPORT & UPDATES</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trading Risk Disclaimer Modal -->
+  <div id="risk-disclaimer-modal" class="admin-overlay hidden">
+    <div class="disclaimer-modal glass-panel">
+      <div class="disclaimer-header">
+        <div class="disclaimer-icon">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3>⚠️ IMPORTANT TRADING RISK DISCLAIMER ⚠️</h3>
+        <p class="disclaimer-subtitle">PLEASE READ CAREFULLY BEFORE USING THIS PLATFORM</p>
+      </div>
+      
+      <div class="disclaimer-body">
+        <div class="disclaimer-scroll-content">
+          <div class="disclaimer-section">
+            <h4><i class="fa-solid fa-exclamation-circle"></i> Trading Involves Substantial Risk</h4>
+            <p><strong>TRADING CRYPTOCURRENCIES, FOREX, AND COMMODITIES INVOLVES SUBSTANTIAL RISK OF LOSS AND IS NOT SUITABLE FOR EVERY INVESTOR.</strong></p>
+            <ul>
+              <li>Past performance is NOT indicative of future results</li>
+              <li>No trading system can guarantee profits or prevent losses</li>
+              <li>90% of retail traders lose money</li>
+              <li>Only trade with money you can afford to lose</li>
+            </ul>
+          </div>
+
+          <div class="disclaimer-section">
+            <h4><i class="fa-solid fa-robot"></i> About the AI Analysis</h4>
+            <p>The AURA AI uses technical indicators (RSI, MACD, EMA, ATR), Smart Money Concepts (Order Blocks, Fair Value Gaps), and ICT methodology (Liquidity Sweeps, Market Structure).</p>
+            <p><strong>What the AI Does NOT Do:</strong></p>
+            <ul>
+              <li>❌ Guarantee profits or predict the future with certainty</li>
+              <li>❌ Replace professional financial advice</li>
+              <li>❌ Eliminate trading risk</li>
+              <li>❌ Work 100% of the time</li>
+            </ul>
+          </div>
+
+          <div class="disclaimer-section">
+            <h4><i class="fa-solid fa-chart-line"></i> Confidence Scores Explained</h4>
+            <p>Confidence scores (e.g., 75%, 85%) represent:</p>
+            <ul>
+              <li><strong>Confluence of technical indicators</strong> - NOT probability of success</li>
+              <li><strong>Strength of the setup</strong> - NOT guaranteed outcome</li>
+              <li><strong>Risk/Reward assessment</strong> - NOT profit prediction</li>
+            </ul>
+            <p class="warning-text">⚠️ A 90% confidence score means strong technical confluence, NOT a 90% chance of profit.</p>
+          </div>
+
+          <div class="disclaimer-section">
+            <h4><i class="fa-solid fa-percentage"></i> Expected Win Rates</h4>
+            <p>Based on professional trading statistics:</p>
+            <ul>
+              <li>Good traders: 40-60% win rate</li>
+              <li>Professional traders: 50-70% win rate</li>
+              <li>Institutional traders: 55-75% win rate</li>
+            </ul>
+            <p class="warning-text">⚠️ Even with 90% confidence setups, expect losses 30-50% of the time.</p>
+          </div>
+
+          <div class="disclaimer-section">
+            <h4><i class="fa-solid fa-shield-halved"></i> Risk Management is Critical</h4>
+            <ul>
+              <li>Never risk more than 1-2% per trade</li>
+              <li>Always use stop losses</li>
+              <li>Never trade with borrowed money</li>
+              <li>Diversify your portfolio</li>
+              <li>Keep emotions in check</li>
+            </ul>
+          </div>
+
+          <div class="disclaimer-section">
+            <h4><i class="fa-solid fa-gavel"></i> Legal Disclaimer</h4>
+            <p><strong>THE INFORMATION PROVIDED IS NOT FINANCIAL, INVESTMENT, TRADING, OR ANY OTHER TYPE OF ADVICE.</strong></p>
+            <ul>
+              <li>Consult a licensed financial advisor before making investment decisions</li>
+              <li>Conduct your own research and due diligence</li>
+              <li>You trade at your own risk</li>
+              <li>We are not responsible for any losses incurred</li>
+            </ul>
+          </div>
+
+          <div class="disclaimer-section final-warning">
+            <h4><i class="fa-solid fa-skull-crossbones"></i> Final Warning</h4>
+            <p><strong>90% of retail traders lose money. Only 10% achieve consistent profitability. It takes years to become consistently profitable. There are no shortcuts or "holy grails".</strong></p>
+            <p class="warning-text">⚠️ TRADE RESPONSIBLY. MANAGE RISK. NEVER RISK MORE THAN YOU CAN AFFORD TO LOSE.</p>
+          </div>
+        </div>
+
+        <div class="disclaimer-acceptance">
+          <label class="disclaimer-checkbox-label">
+            <input type="checkbox" id="disclaimer-accept-checkbox">
+            <span>I have read and understood the risk disclaimer. I acknowledge that trading involves substantial risk and I accept full responsibility for my trading decisions.</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="disclaimer-footer">
+        <button id="disclaimer-accept-btn" class="disclaimer-accept-button" disabled>
+          <i class="fa-solid fa-check-circle"></i> I UNDERSTAND THE RISKS - PROCEED
+        </button>
+        <p class="disclaimer-footer-text">For educational and informational purposes only. Not financial advice.</p>
       </div>
     </div>
   </div>

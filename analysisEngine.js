@@ -8,6 +8,7 @@ const AnalysisEngine = (() => {
 
   /**
    * Core analysis executor. Runs all calculations on the candlestick array.
+   * Enhanced with advanced technical analysis and market condition detection.
    * 
    * @param {string} symbol - e.g. "BTCUSD"
    * @param {string} timeframe - e.g. "15m"
@@ -16,19 +17,29 @@ const AnalysisEngine = (() => {
    * @returns {Object} Full analysis breakdown and structured string setup
    */
   function analyze(symbol, timeframe, mode, candles, adminConfig = null) {
-    if (!candles || candles.length < 30) {
-      throw new Error("Insufficient candle history. Need at least 30 periods.");
+    if (!candles || candles.length < 50) {
+      throw new Error("Insufficient candle history. Need at least 50 periods for enhanced analysis.");
     }
 
     const closes = candles.map(c => c.close);
     const highs = candles.map(c => c.high);
     const lows = candles.map(c => c.low);
+    const volumes = candles.map(c => c.volume || 1000);
 
-    // 1. Calculate Standard Indicators
+    // 1. Calculate Enhanced Technical Indicators
     const rsi = calculateRSI(closes, 14);
     const macd = calculateMACD(closes, 12, 26, 9);
     const atr = calculateATR(candles, 14);
     const currentPrice = candles[candles.length - 1].close;
+    
+    // Enhanced indicators
+    const stochastic = calculateStochastic(highs, lows, closes, 14, 3);
+    const bollinger = calculateBollingerBands(closes, 20, 2);
+    const vwap = calculateVWAP(candles);
+    const adx = calculateADX(highs, lows, closes, 14);
+    const marketCondition = detectMarketCondition(closes, atr);
+    const volumeProfile = analyzeVolumeProfile(candles);
+    const supportResistance = findKeyLevels(highs, lows, closes);
 
     // 2. Identify Smart Money & ICT Concepts
     const swings = findSwings(highs, lows, 3); // 3-period swing high/lows
@@ -76,115 +87,211 @@ const AnalysisEngine = (() => {
       trendStrength = 'Forced Admin';
     }
 
-    // 4. Calculate Levels (Prop-Trader Risk Guidelines)
-    // Bullish: Stop loss placed below the most recent Bullish Order Block or low wick, entry at OB equilibrium / FVG
-    // Bearish: Stop loss placed above the Bearish Order Block or high wick, entry at OB equilibrium / FVG
-    
+    // 4. Enhanced Level Calculations with Dynamic Risk Management
     const lastAtr = atr[atr.length - 1];
+    const volatilityMultiplier = getVolatilityMultiplier(marketCondition.volatility);
+    const trendMultiplier = getTrendMultiplier(marketCondition.condition, marketCondition.strength);
+    
     let entryPrice = currentPrice;
     let stopLoss = 0;
     
     const activeOB = isBullish ? orderBlocks.bullish[0] : orderBlocks.bearish[0];
     const activeFVG = isBullish ? fvgs.bullish[0] : fvgs.bearish[0];
     
-    // Position Entry slightly optimized to order block or FVG
+    // Enhanced Entry Logic with Key Level Consideration
+    const nearbySupport = supportResistance.find(level => 
+      level.type === 'SUPPORT' && level.price < currentPrice && 
+      (currentPrice - level.price) / currentPrice < 0.01
+    );
+    const nearbyResistance = supportResistance.find(level => 
+      level.type === 'RESISTANCE' && level.price > currentPrice && 
+      (level.price - currentPrice) / currentPrice < 0.01
+    );
+
     if (isBullish) {
+      // Bullish entry optimization
       if (activeOB && activeOB.low < currentPrice) {
-        // Entry at OB mitigation / top of OB
-        entryPrice = parseFloat((activeOB.high).toFixed(getDecimalPlaces(symbol)));
-        stopLoss = parseFloat((activeOB.low - (lastAtr * 0.5)).toFixed(getDecimalPlaces(symbol)));
+        entryPrice = parseFloat((activeOB.high * 0.618 + activeOB.low * 0.382).toFixed(getDecimalPlaces(symbol)));
+        stopLoss = parseFloat((activeOB.low - (lastAtr * volatilityMultiplier * 0.8)).toFixed(getDecimalPlaces(symbol)));
       } else if (activeFVG && activeFVG.low < currentPrice) {
-        entryPrice = parseFloat((activeFVG.low).toFixed(getDecimalPlaces(symbol)));
-        stopLoss = parseFloat((entryPrice - (lastAtr * 1.5)).toFixed(getDecimalPlaces(symbol)));
+        entryPrice = parseFloat((activeFVG.low + (activeFVG.high - activeFVG.low) * 0.382).toFixed(getDecimalPlaces(symbol)));
+        stopLoss = parseFloat((entryPrice - (lastAtr * volatilityMultiplier * 1.2)).toFixed(getDecimalPlaces(symbol)));
+      } else if (nearbySupport) {
+        entryPrice = parseFloat((nearbySupport.price + lastAtr * 0.5).toFixed(getDecimalPlaces(symbol)));
+        stopLoss = parseFloat((nearbySupport.price - (lastAtr * volatilityMultiplier)).toFixed(getDecimalPlaces(symbol)));
       } else {
         entryPrice = parseFloat(currentPrice.toFixed(getDecimalPlaces(symbol)));
-        stopLoss = parseFloat((entryPrice - (lastAtr * 1.8)).toFixed(getDecimalPlaces(symbol)));
+        stopLoss = parseFloat((entryPrice - (lastAtr * volatilityMultiplier * 1.5)).toFixed(getDecimalPlaces(symbol)));
       }
       
-      // Ensure SL is logical
+      // Ensure logical stop loss
       if (stopLoss >= entryPrice) {
-        stopLoss = parseFloat((entryPrice - (lastAtr * 1.5)).toFixed(getDecimalPlaces(symbol)));
+        stopLoss = parseFloat((entryPrice - (lastAtr * volatilityMultiplier * 1.2)).toFixed(getDecimalPlaces(symbol)));
       }
     } else {
-      // Bearish entry
+      // Bearish entry optimization
       if (activeOB && activeOB.high > currentPrice) {
-        entryPrice = parseFloat((activeOB.low).toFixed(getDecimalPlaces(symbol)));
-        stopLoss = parseFloat((activeOB.high + (lastAtr * 0.5)).toFixed(getDecimalPlaces(symbol)));
+        entryPrice = parseFloat((activeOB.low * 0.618 + activeOB.high * 0.382).toFixed(getDecimalPlaces(symbol)));
+        stopLoss = parseFloat((activeOB.high + (lastAtr * volatilityMultiplier * 0.8)).toFixed(getDecimalPlaces(symbol)));
       } else if (activeFVG && activeFVG.high > currentPrice) {
-        entryPrice = parseFloat((activeFVG.high).toFixed(getDecimalPlaces(symbol)));
-        stopLoss = parseFloat((entryPrice + (lastAtr * 1.5)).toFixed(getDecimalPlaces(symbol)));
+        entryPrice = parseFloat((activeFVG.high - (activeFVG.high - activeFVG.low) * 0.382).toFixed(getDecimalPlaces(symbol)));
+        stopLoss = parseFloat((entryPrice + (lastAtr * volatilityMultiplier * 1.2)).toFixed(getDecimalPlaces(symbol)));
+      } else if (nearbyResistance) {
+        entryPrice = parseFloat((nearbyResistance.price - lastAtr * 0.5).toFixed(getDecimalPlaces(symbol)));
+        stopLoss = parseFloat((nearbyResistance.price + (lastAtr * volatilityMultiplier)).toFixed(getDecimalPlaces(symbol)));
       } else {
         entryPrice = parseFloat(currentPrice.toFixed(getDecimalPlaces(symbol)));
-        stopLoss = parseFloat((entryPrice + (lastAtr * 1.8)).toFixed(getDecimalPlaces(symbol)));
+        stopLoss = parseFloat((entryPrice + (lastAtr * volatilityMultiplier * 1.5)).toFixed(getDecimalPlaces(symbol)));
       }
       
-      // Ensure SL is logical
+      // Ensure logical stop loss
       if (stopLoss <= entryPrice) {
-        stopLoss = parseFloat((entryPrice + (lastAtr * 1.5)).toFixed(getDecimalPlaces(symbol)));
+        stopLoss = parseFloat((entryPrice + (lastAtr * volatilityMultiplier * 1.2)).toFixed(getDecimalPlaces(symbol)));
       }
     }
 
-    // Stop Loss Distance
+    // Enhanced Take Profit Calculations
     const slDistance = Math.abs(entryPrice - stopLoss);
+    const baseRR1 = 1.8 * trendMultiplier; // Adjusted based on trend strength
+    const baseRR2 = 3.2 * trendMultiplier;
+    const baseRR3 = 5.0 * trendMultiplier;
     
-    // Take Profit Targets (1:1.5, 1:3, 1:4.5 R:R)
     let tp1 = 0, tp2 = 0, tp3 = 0;
     
     if (isBullish) {
-      tp1 = parseFloat((entryPrice + (slDistance * 1.5)).toFixed(getDecimalPlaces(symbol)));
-      tp2 = parseFloat((entryPrice + (slDistance * 3.0)).toFixed(getDecimalPlaces(symbol)));
-      tp3 = parseFloat((entryPrice + (slDistance * 4.5)).toFixed(getDecimalPlaces(symbol)));
+      tp1 = parseFloat((entryPrice + (slDistance * baseRR1)).toFixed(getDecimalPlaces(symbol)));
+      tp2 = parseFloat((entryPrice + (slDistance * baseRR2)).toFixed(getDecimalPlaces(symbol)));
+      tp3 = parseFloat((entryPrice + (slDistance * baseRR3)).toFixed(getDecimalPlaces(symbol)));
+      
+      // Adjust TP3 if near major resistance
+      if (nearbyResistance && tp3 > nearbyResistance.price) {
+        tp3 = parseFloat((nearbyResistance.price * 0.995).toFixed(getDecimalPlaces(symbol)));
+      }
     } else {
-      tp1 = parseFloat((entryPrice - (slDistance * 1.5)).toFixed(getDecimalPlaces(symbol)));
-      tp2 = parseFloat((entryPrice - (slDistance * 3.0)).toFixed(getDecimalPlaces(symbol)));
-      tp3 = parseFloat((entryPrice - (slDistance * 4.5)).toFixed(getDecimalPlaces(symbol)));
+      tp1 = parseFloat((entryPrice - (slDistance * baseRR1)).toFixed(getDecimalPlaces(symbol)));
+      tp2 = parseFloat((entryPrice - (slDistance * baseRR2)).toFixed(getDecimalPlaces(symbol)));
+      tp3 = parseFloat((entryPrice - (slDistance * baseRR3)).toFixed(getDecimalPlaces(symbol)));
+      
+      // Adjust TP3 if near major support
+      if (nearbySupport && tp3 < nearbySupport.price) {
+        tp3 = parseFloat((nearbySupport.price * 1.005).toFixed(getDecimalPlaces(symbol)));
+      }
     }
 
     // Risk Reward Ratio
-    const rrRatio = "1:3.5"; // Target is standard institutional R:R midpoint
+    const avgRR = ((baseRR1 + baseRR2 + baseRR3) / 3).toFixed(1);
+    const rrRatio = `1:${avgRR}`;
 
-    // 5. Calculate Confidence Score
-    let confidence = 65; // Base
+    // 5. Enhanced Confidence Score Calculation
+    let confidence = 50; // Base confidence
     let confluences = [];
+    let riskLevel = 'MODERATE';
 
-    // Trend Confluence
+    // Market Condition Confluence (20 points max)
+    if (marketCondition.condition !== 'RANGING') {
+      confidence += 15;
+      confluences.push(`${marketCondition.strength} ${marketCondition.condition.toLowerCase()} detected`);
+      
+      if (marketCondition.strength === 'STRONG') {
+        confidence += 5;
+        riskLevel = 'LOW';
+      }
+    } else {
+      riskLevel = 'HIGH';
+      confidence -= 5;
+    }
+
+    // Trend Confluence (15 points max)
     if ((isBullish && structureBias.includes("Bullish")) || (!isBullish && structureBias.includes("Bearish"))) {
-      confidence += 8;
-      confluences.push("EMA 50 trend alignment");
+      confidence += 10;
+      confluences.push("EMA trend alignment confirmed");
+      
+      // Additional confluence if price is above/below VWAP
+      const currentVwap = vwap[vwap.length - 1];
+      if ((isBullish && currentPrice > currentVwap) || (!isBullish && currentPrice < currentVwap)) {
+        confidence += 5;
+        confluences.push("VWAP institutional level alignment");
+      }
+    }
+
+    // Volume Confluence (10 points max)
+    if (volumeProfile.signal === 'HIGH_INSTITUTIONAL') {
+      confidence += 10;
+      confluences.push("High institutional volume detected");
+    } else if (volumeProfile.signal === 'ELEVATED') {
+      confidence += 5;
+      confluences.push("Elevated volume activity");
+    }
+
+    // Technical Indicator Confluence (15 points max)
+    const rsiVal = rsi[rsi.length - 1];
+    const stochK = stochastic.k[stochastic.k.length - 1];
+    const adxVal = adx.adx[adx.adx.length - 1];
+    
+    // RSI confluence
+    if (isBullish && rsiVal < 40) {
+      confidence += 5;
+      confluences.push("RSI oversold accumulation zone");
+    } else if (!isBullish && rsiVal > 60) {
+      confidence += 5;
+      confluences.push("RSI overbought distribution zone");
     }
     
-    // FVG Confluence
-    if (activeFVG) {
+    // Stochastic confluence
+    if (isBullish && stochK < 20) {
+      confidence += 3;
+      confluences.push("Stochastic oversold signal");
+    } else if (!isBullish && stochK > 80) {
+      confidence += 3;
+      confluences.push("Stochastic overbought signal");
+    }
+    
+    // ADX trend strength
+    if (adxVal > 25) {
       confidence += 7;
+      confluences.push(`Strong trend momentum (ADX: ${adxVal.toFixed(1)})`);
+    }
+
+    // Smart Money Concepts Confluence (15 points max)
+    if (activeFVG) {
+      confidence += 8;
       confluences.push("Active Fair Value Gap imbalance");
     }
 
-    // Order Block Confluence
     if (activeOB) {
+      confidence += 7;
+      confluences.push("Institutional Order Block mitigation");
+    }
+
+    // Support/Resistance Confluence (10 points max)
+    const nearbyLevel = supportResistance.find(level => 
+      Math.abs(level.price - currentPrice) / currentPrice < 0.005
+    );
+    if (nearbyLevel) {
       confidence += 10;
-      confluences.push("Mitigation of highly institutional Order Block");
+      confluences.push(`Key ${nearbyLevel.type.toLowerCase()} level proximity`);
     }
 
-    // RSI Confluence
-    if (isBullish && rsiVal < 40) {
-      confidence += 5;
-      confluences.push("RSI Oversold Accumulation zone");
-    } else if (!isBullish && rsiVal > 60) {
-      confidence += 5;
-      confluences.push("RSI Overbought Distribution zone");
-    }
-
-    // Liquidity Sweeps
+    // Liquidity Sweeps (8 points max)
     if (liquiditySweep.swept) {
       confidence += 8;
-      confluences.push(`${liquiditySweep.type} sweeps liquidity pools`);
+      confluences.push(`${liquiditySweep.type} liquidity sweep completed`);
     }
 
-    // Cap confidence & apply admin multiplier
+    // Risk Level Adjustment
+    if (riskLevel === 'HIGH') {
+      confidence = Math.max(confidence - 10, 30);
+    } else if (riskLevel === 'LOW') {
+      confidence = Math.min(confidence + 5, 95);
+    }
+
+    // Apply admin multiplier
     if (adminConfig && adminConfig.confidenceMult) {
       confidence = Math.round(confidence * adminConfig.confidenceMult);
     }
-    confidence = Math.min(99, Math.max(10, confidence));
+    
+    // Cap confidence
+    confidence = Math.min(95, Math.max(35, confidence));
 
     // Volatility Status Text (with admin override support)
     const atrPct = (lastAtr / currentPrice) * 100;
@@ -287,8 +394,245 @@ ANALYSIS:
      ========================================================================== */
 
   /**
-   * Calculates EMA values for a series
+   * Gets volatility multiplier for stop loss adjustment
    */
+  function getVolatilityMultiplier(volatilityPct) {
+    if (volatilityPct > 3.0) return 1.5; // High volatility - wider stops
+    if (volatilityPct > 1.5) return 1.2; // Medium volatility
+    if (volatilityPct < 0.5) return 0.8; // Low volatility - tighter stops
+    return 1.0; // Normal volatility
+  }
+
+  /**
+   * Gets trend multiplier for take profit adjustment
+   */
+  function getTrendMultiplier(condition, strength) {
+    if (condition === 'RANGING') return 0.7; // Reduce targets in ranging market
+    if (strength === 'STRONG') return 1.3; // Extend targets in strong trends
+    if (strength === 'MODERATE') return 1.1; // Slightly extend in moderate trends
+    return 1.0; // Default multiplier
+  }
+
+  /**
+   * Calculates Stochastic Oscillator
+   */
+  function calculateStochastic(highs, lows, closes, kPeriod = 14, dPeriod = 3) {
+    const k = [];
+    const d = [];
+    
+    for (let i = kPeriod - 1; i < closes.length; i++) {
+      const highestHigh = Math.max(...highs.slice(i - kPeriod + 1, i + 1));
+      const lowestLow = Math.min(...lows.slice(i - kPeriod + 1, i + 1));
+      const kValue = ((closes[i] - lowestLow) / (highestHigh - lowestLow)) * 100;
+      k[i] = kValue;
+    }
+    
+    // Calculate %D (SMA of %K)
+    for (let i = kPeriod + dPeriod - 2; i < k.length; i++) {
+      const sum = k.slice(i - dPeriod + 1, i + 1).reduce((a, b) => a + b, 0);
+      d[i] = sum / dPeriod;
+    }
+    
+    // Fill initial values
+    for (let i = 0; i < kPeriod - 1; i++) {
+      k[i] = 50;
+      d[i] = 50;
+    }
+    
+    return { k, d };
+  }
+
+  /**
+   * Calculates Bollinger Bands
+   */
+  function calculateBollingerBands(closes, period = 20, stdDev = 2) {
+    const sma = calculateSMA(closes, period);
+    const upper = [];
+    const lower = [];
+    
+    for (let i = period - 1; i < closes.length; i++) {
+      const slice = closes.slice(i - period + 1, i + 1);
+      const mean = sma[i];
+      const variance = slice.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / period;
+      const standardDeviation = Math.sqrt(variance);
+      
+      upper[i] = mean + (standardDeviation * stdDev);
+      lower[i] = mean - (standardDeviation * stdDev);
+    }
+    
+    // Fill initial values
+    for (let i = 0; i < period - 1; i++) {
+      upper[i] = closes[i] * 1.02;
+      lower[i] = closes[i] * 0.98;
+    }
+    
+    return { upper, middle: sma, lower };
+  }
+
+  /**
+   * Calculates Simple Moving Average
+   */
+  function calculateSMA(values, period) {
+    const sma = [];
+    for (let i = period - 1; i < values.length; i++) {
+      const sum = values.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0);
+      sma[i] = sum / period;
+    }
+    
+    // Fill initial values
+    for (let i = 0; i < period - 1; i++) {
+      sma[i] = values[i];
+    }
+    
+    return sma;
+  }
+
+  /**
+   * Calculates Volume Weighted Average Price (VWAP)
+   */
+  function calculateVWAP(candles) {
+    const vwap = [];
+    let cumulativeVolume = 0;
+    let cumulativeVolumePrice = 0;
+    
+    for (let i = 0; i < candles.length; i++) {
+      const typicalPrice = (candles[i].high + candles[i].low + candles[i].close) / 3;
+      const volume = candles[i].volume || 1000;
+      
+      cumulativeVolumePrice += typicalPrice * volume;
+      cumulativeVolume += volume;
+      
+      vwap[i] = cumulativeVolumePrice / cumulativeVolume;
+    }
+    
+    return vwap;
+  }
+
+  /**
+   * Calculates Average Directional Index (ADX)
+   */
+  function calculateADX(highs, lows, closes, period = 14) {
+    const tr = [];
+    const plusDM = [];
+    const minusDM = [];
+    
+    // Calculate True Range and Directional Movement
+    tr[0] = highs[0] - lows[0];
+    plusDM[0] = 0;
+    minusDM[0] = 0;
+    
+    for (let i = 1; i < closes.length; i++) {
+      const hl = highs[i] - lows[i];
+      const hpc = Math.abs(highs[i] - closes[i - 1]);
+      const lpc = Math.abs(lows[i] - closes[i - 1]);
+      tr[i] = Math.max(hl, hpc, lpc);
+      
+      const upMove = highs[i] - highs[i - 1];
+      const downMove = lows[i - 1] - lows[i];
+      
+      plusDM[i] = (upMove > downMove && upMove > 0) ? upMove : 0;
+      minusDM[i] = (downMove > upMove && downMove > 0) ? downMove : 0;
+    }
+    
+    // Calculate smoothed averages
+    const smoothedTR = calculateEMA(tr, period);
+    const smoothedPlusDM = calculateEMA(plusDM, period);
+    const smoothedMinusDM = calculateEMA(minusDM, period);
+    
+    const plusDI = smoothedPlusDM.map((val, i) => (val / smoothedTR[i]) * 100);
+    const minusDI = smoothedMinusDM.map((val, i) => (val / smoothedTR[i]) * 100);
+    
+    const dx = plusDI.map((val, i) => {
+      const sum = val + minusDI[i];
+      return sum === 0 ? 0 : (Math.abs(val - minusDI[i]) / sum) * 100;
+    });
+    
+    const adx = calculateEMA(dx, period);
+    
+    return { adx, plusDI, minusDI };
+  }
+
+  /**
+   * Detects market condition (trending vs ranging)
+   */
+  function detectMarketCondition(closes, atr) {
+    const ema20 = calculateEMA(closes, 20);
+    const ema50 = calculateEMA(closes, 50);
+    const currentPrice = closes[closes.length - 1];
+    const currentEma20 = ema20[ema20.length - 1];
+    const currentEma50 = ema50[ema50.length - 1];
+    const currentAtr = atr[atr.length - 1];
+    
+    // Calculate trend strength
+    const trendStrength = Math.abs(currentEma20 - currentEma50) / currentPrice;
+    const volatility = currentAtr / currentPrice;
+    
+    let condition = 'RANGING';
+    let strength = 'WEAK';
+    
+    if (trendStrength > 0.02) {
+      condition = currentEma20 > currentEma50 ? 'UPTREND' : 'DOWNTREND';
+      strength = trendStrength > 0.05 ? 'STRONG' : 'MODERATE';
+    }
+    
+    return {
+      condition,
+      strength,
+      trendStrength: trendStrength * 100,
+      volatility: volatility * 100
+    };
+  }
+
+  /**
+   * Analyzes volume profile for institutional activity
+   */
+  function analyzeVolumeProfile(candles) {
+    const recentCandles = candles.slice(-20);
+    const avgVolume = recentCandles.reduce((sum, c) => sum + (c.volume || 1000), 0) / recentCandles.length;
+    const currentVolume = candles[candles.length - 1].volume || 1000;
+    
+    const volumeRatio = currentVolume / avgVolume;
+    let volumeSignal = 'NORMAL';
+    
+    if (volumeRatio > 2.0) volumeSignal = 'HIGH_INSTITUTIONAL';
+    else if (volumeRatio > 1.5) volumeSignal = 'ELEVATED';
+    else if (volumeRatio < 0.5) volumeSignal = 'LOW';
+    
+    return {
+      signal: volumeSignal,
+      ratio: volumeRatio,
+      current: currentVolume,
+      average: avgVolume
+    };
+  }
+
+  /**
+   * Finds key support and resistance levels
+   */
+  function findKeyLevels(highs, lows, closes) {
+    const levels = [];
+    const lookback = 20;
+    
+    // Find recent swing highs and lows
+    for (let i = lookback; i < highs.length - lookback; i++) {
+      let isSwingHigh = true;
+      let isSwingLow = true;
+      
+      for (let j = 1; j <= lookback; j++) {
+        if (highs[i] < highs[i - j] || highs[i] < highs[i + j]) isSwingHigh = false;
+        if (lows[i] > lows[i - j] || lows[i] > lows[i + j]) isSwingLow = false;
+      }
+      
+      if (isSwingHigh) levels.push({ price: highs[i], type: 'RESISTANCE', strength: 1 });
+      if (isSwingLow) levels.push({ price: lows[i], type: 'SUPPORT', strength: 1 });
+    }
+    
+    // Sort by proximity to current price
+    const currentPrice = closes[closes.length - 1];
+    levels.sort((a, b) => Math.abs(a.price - currentPrice) - Math.abs(b.price - currentPrice));
+    
+    return levels.slice(0, 5); // Return top 5 closest levels
+  }
   function calculateEMA(values, period) {
     const ema = [];
     const k = 2 / (period + 1);

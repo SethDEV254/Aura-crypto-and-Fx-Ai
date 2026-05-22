@@ -2911,3 +2911,287 @@ body {
   pointer-events: none;
   filter: blur(3px);
 }
+
+/* ==========================================================================
+   Trading Risk Disclaimer Modal Styles
+   ========================================================================== */
+.disclaimer-modal {
+  width: 650px;
+  max-width: 90vw;
+  max-height: 85vh;
+  background: rgba(10, 12, 22, 0.98);
+  border: 2px solid var(--neon-red);
+  border-radius: 8px;
+  box-shadow: 0 0 60px rgba(255, 50, 50, 0.5), inset 0 0 30px rgba(255, 50, 50, 0.08);
+  display: flex;
+  flex-direction: column;
+  animation: disclaimerSlideIn 0.4s ease-out forwards;
+}
+
+@keyframes disclaimerSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.disclaimer-header {
+  padding: 20px 25px;
+  border-bottom: 1px solid rgba(255, 50, 50, 0.3);
+  text-align: center;
+  background: linear-gradient(135deg, rgba(255, 50, 50, 0.1) 0%, rgba(255, 100, 100, 0.05) 100%);
+}
+
+.disclaimer-icon {
+  font-size: 48px;
+  color: var(--neon-red);
+  margin-bottom: 10px;
+  animation: disclaimerPulse 2s ease-in-out infinite;
+}
+
+@keyframes disclaimerPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.disclaimer-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--neon-red);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.disclaimer-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+  font-family: var(--font-mono);
+}
+
+.disclaimer-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 25px;
+}
+
+.disclaimer-scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neon-red) rgba(255, 255, 255, 0.05);
+}
+
+.disclaimer-scroll-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.disclaimer-scroll-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.disclaimer-scroll-content::-webkit-scrollbar-thumb {
+  background: var(--neon-red);
+  border-radius: 3px;
+}
+
+.disclaimer-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 3px solid var(--neon-amber);
+  border-radius: 4px;
+}
+
+.disclaimer-section.final-warning {
+  border-left-color: var(--neon-red);
+  background: rgba(255, 50, 50, 0.05);
+  border: 1px solid rgba(255, 50, 50, 0.3);
+}
+
+.disclaimer-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--neon-cyan);
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.disclaimer-section h4 i {
+  color: var(--neon-amber);
+}
+
+.disclaimer-section.final-warning h4 i {
+  color: var(--neon-red);
+}
+
+.disclaimer-section p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0 0 10px 0;
+}
+
+.disclaimer-section ul {
+  margin: 10px 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.disclaimer-section ul li {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  position: relative;
+  padding-left: 15px;
+}
+
+.disclaimer-section ul li:before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: var(--neon-cyan);
+  font-weight: bold;
+}
+
+.warning-text {
+  color: var(--neon-amber) !important;
+  font-weight: 600 !important;
+  background: rgba(255, 170, 0, 0.1);
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-left: 3px solid var(--neon-amber);
+}
+
+.disclaimer-acceptance {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(0, 240, 255, 0.05);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 6px;
+}
+
+.disclaimer-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.disclaimer-checkbox-label input[type="checkbox"] {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--neon-cyan);
+  flex-shrink: 0;
+}
+
+.disclaimer-checkbox-label:hover span {
+  color: var(--text-primary);
+}
+
+.disclaimer-footer {
+  padding: 20px 25px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.disclaimer-accept-button {
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-bull) 100%);
+  border: none;
+  border-radius: 6px;
+  color: var(--bg-primary);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.disclaimer-accept-button:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.disclaimer-accept-button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 240, 255, 0.4);
+}
+
+.disclaimer-accept-button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.disclaimer-footer-text {
+  margin: 12px 0 0 0;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* Permanent Risk Warning Banner */
+.risk-warning-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(90deg, rgba(255, 50, 50, 0.15) 0%, rgba(255, 100, 0, 0.15) 100%);
+  border-top: 2px solid var(--neon-red);
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 9999;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  backdrop-filter: blur(10px);
+}
+
+.risk-warning-banner i {
+  color: var(--neon-red);
+  font-size: 14px;
+  animation: disclaimerPulse 2s ease-in-out infinite;
+}
+
+.risk-warning-banner strong {
+  color: var(--neon-red);
+  font-weight: 700;
+}
+
+.risk-warning-banner.hidden {
+  display: none;
+}
