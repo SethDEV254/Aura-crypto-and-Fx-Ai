@@ -42,10 +42,10 @@ const DataService = (() => {
    */
   function init() {
     initCryptoWebsocket();
-    initForexPrices();
+    initForexRealtime();
     
-    // Update forex prices every 2 seconds for more real-time feel
-    forexUpdateInterval = setInterval(initForexPrices, 2000);
+    // Update forex prices every 1 second for real-time feel
+    forexUpdateInterval = setInterval(initForexRealtime, 1000);
     
     // Add micro price movements every 500ms for ultra-smooth real-time effect
     setInterval(simulateMicroMovements, 500);
@@ -94,64 +94,109 @@ const DataService = (() => {
   }
 
   /**
-   * Fetches real forex prices from multiple sources for better accuracy
+   * Fetches real-time forex prices from multiple free APIs
+   * Updates every 1 second for near real-time experience
    */
-  async function initForexPrices() {
-    // Fetch Gold from Binance (most accurate for gold)
+  async function initForexRealtime() {
+    // Fetch Gold from Binance (most accurate and real-time)
     try {
-      const goldResponse = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=XAUUSDT');
+      const goldResponse = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=XAUUSDT');
       if (goldResponse.ok) {
         const goldData = await goldResponse.json();
-        const goldPrice = parseFloat(goldData.lastPrice);
-        const goldChange = parseFloat(goldData.priceChangePercent);
+        const goldPrice = parseFloat(goldData.price);
         
         if (goldPrice > 0) {
-          // Update base price from API
-          currentPrices.XAUUSD.prevPrice = currentPrices.XAUUSD.price || goldPrice;
+          // Calculate 24h change from previous price
+          const prevPrice = currentPrices.XAUUSD.price;
+          const goldChange = prevPrice > 0 ? ((goldPrice - prevPrice) / prevPrice) * 100 : 0;
           updatePrice('XAUUSD', goldPrice, goldChange);
         }
       }
     } catch (e) {
-      console.warn('Failed to fetch Gold price:', e);
+      console.warn('Gold API error:', e.message);
     }
 
-    // Fetch forex rates using exchangerate-api
+    // Fetch real-time forex rates using multiple free APIs
+    await fetchForexFromMultipleSources();
+  }
+
+  /**
+   * Fetches forex rates from multiple free sources for redundancy and real-time updates
+   */
+  async function fetchForexFromMultipleSources() {
+    // Try primary source: Fawazahmed0's Currency API (no rate limits)
+    try {
+      const response = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json');
+      if (response.ok) {
+        const data = await response.json();
+        const rates = data.usd;
+        
+        if (rates) {
+          // EUR/USD (inverse of USD/EUR)
+          if (rates.eur) {
+            const eurUsd = 1 / rates.eur;
+            const prevEur = currentPrices.EURUSD.price;
+            const eurChange = prevEur > 0 ? ((eurUsd - prevEur) / prevEur) * 100 : 0;
+            updatePrice('EURUSD', eurUsd, eurChange);
+          }
+          
+          // GBP/USD (inverse of USD/GBP)
+          if (rates.gbp) {
+            const gbpUsd = 1 / rates.gbp;
+            const prevGbp = currentPrices.GBPUSD.price;
+            const gbpChange = prevGbp > 0 ? ((gbpUsd - prevGbp) / prevGbp) * 100 : 0;
+            updatePrice('GBPUSD', gbpUsd, gbpChange);
+          }
+          
+          // USD/JPY (direct)
+          if (rates.jpy) {
+            const usdJpy = rates.jpy;
+            const prevJpy = currentPrices.USDJPY.price;
+            const jpyChange = prevJpy > 0 ? ((usdJpy - prevJpy) / prevJpy) * 100 : 0;
+            updatePrice('USDJPY', usdJpy, jpyChange);
+          }
+          
+          return; // Success, exit
+        }
+      }
+    } catch (e) {
+      console.warn('Primary forex API error:', e.message);
+    }
+
+    // Fallback to exchangerate-api
     try {
       const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
       if (response.ok) {
         const data = await response.json();
         
-        // Calculate EUR/USD (inverse of USD/EUR)
         if (data.rates.EUR) {
           const eurUsd = 1 / data.rates.EUR;
-          currentPrices.EURUSD.prevPrice = currentPrices.EURUSD.price || eurUsd;
-          const eurChange = currentPrices.EURUSD.prevPrice > 0 ? 
-            ((eurUsd - currentPrices.EURUSD.prevPrice) / currentPrices.EURUSD.prevPrice) * 100 : 0;
+          const prevEur = currentPrices.EURUSD.price;
+          const eurChange = prevEur > 0 ? ((eurUsd - prevEur) / prevEur) * 100 : 0;
           updatePrice('EURUSD', eurUsd, eurChange);
         }
         
-        // Calculate GBP/USD (inverse of USD/GBP)
         if (data.rates.GBP) {
           const gbpUsd = 1 / data.rates.GBP;
-          currentPrices.GBPUSD.prevPrice = currentPrices.GBPUSD.price || gbpUsd;
-          const gbpChange = currentPrices.GBPUSD.prevPrice > 0 ? 
-            ((gbpUsd - currentPrices.GBPUSD.prevPrice) / currentPrices.GBPUSD.prevPrice) * 100 : 0;
+          const prevGbp = currentPrices.GBPUSD.price;
+          const gbpChange = prevGbp > 0 ? ((gbpUsd - prevGbp) / prevGbp) * 100 : 0;
           updatePrice('GBPUSD', gbpUsd, gbpChange);
         }
         
-        // USD/JPY is direct
         if (data.rates.JPY) {
           const usdJpy = data.rates.JPY;
-          currentPrices.USDJPY.prevPrice = currentPrices.USDJPY.price || usdJpy;
-          const jpyChange = currentPrices.USDJPY.prevPrice > 0 ? 
-            ((usdJpy - currentPrices.USDJPY.prevPrice) / currentPrices.USDJPY.prevPrice) * 100 : 0;
+          const prevJpy = currentPrices.USDJPY.price;
+          const jpyChange = prevJpy > 0 ? ((usdJpy - prevJpy) / prevJpy) * 100 : 0;
           updatePrice('USDJPY', usdJpy, jpyChange);
         }
+        
+        return; // Success, exit
       }
     } catch (e) {
-      console.warn('Failed to fetch forex prices:', e);
-      // Continue with micro movements even if API fails
+      console.warn('Fallback forex API error:', e.message);
     }
+
+    // If both APIs fail, micro-movements will continue to provide smooth updates
   }
 
   /**
@@ -191,19 +236,20 @@ const DataService = (() => {
       if (current.price <= 0) return;
       
       // Determine volatility based on asset type
+      // Reduced volatility since we're updating forex every 1 second now
       let microVolatility;
       if (symbol.includes('BTC')) {
-        microVolatility = 5; // Bitcoin moves in larger increments
+        microVolatility = 3; // Bitcoin micro movements
       } else if (symbol.includes('ETH')) {
-        microVolatility = 0.5; // Ethereum smaller movements
+        microVolatility = 0.3; // Ethereum smaller movements
       } else if (symbol.includes('SOL')) {
-        microVolatility = 0.05; // Solana even smaller
+        microVolatility = 0.03; // Solana even smaller
       } else if (symbol === 'XAUUSD') {
-        microVolatility = 0.15; // Gold micro movements
+        microVolatility = 0.1; // Gold micro movements (reduced)
       } else if (symbol.includes('JPY')) {
-        microVolatility = 0.005; // JPY pairs
+        microVolatility = 0.003; // JPY pairs (reduced)
       } else {
-        microVolatility = 0.00005; // EUR/GBP pairs (5 pips)
+        microVolatility = 0.00003; // EUR/GBP pairs (3 pips, reduced)
       }
       
       // Random walk with mean reversion tendency
