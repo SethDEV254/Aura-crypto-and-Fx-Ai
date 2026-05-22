@@ -98,7 +98,58 @@ const DataService = (() => {
    * Updates every 1 second for near real-time experience
    */
   async function initForexRealtime() {
-    // Fetch Gold from Binance (most accurate and real-time)
+    // Fetch Gold from multiple sources for best accuracy
+    await fetchGoldPrice();
+
+    // Fetch forex rates using multiple free APIs
+    await fetchForexFromMultipleSources();
+  }
+
+  /**
+   * Fetches gold price from multiple sources to match TradingView's XAUUSD
+   */
+  async function fetchGoldPrice() {
+    // Try Gold-API.com first (free, real-time spot prices)
+    try {
+      const response = await fetch('https://www.gold-api.com/api/XAU/USD');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.price) {
+          const goldPrice = parseFloat(data.price);
+          const prevPrice = currentPrices.XAUUSD.price;
+          const goldChange = prevPrice > 0 ? ((goldPrice - prevPrice) / prevPrice) * 100 : 0;
+          
+          if (goldPrice > 0) {
+            updatePrice('XAUUSD', goldPrice, goldChange);
+            return; // Success
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Gold-API error:', e.message);
+    }
+
+    // Fallback 1: Try Metals-API (free tier available)
+    try {
+      const response = await fetch('https://api.metals.live/v1/spot/gold');
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data[0] && data[0].price) {
+          const goldPrice = parseFloat(data[0].price);
+          const prevPrice = currentPrices.XAUUSD.price;
+          const goldChange = prevPrice > 0 ? ((goldPrice - prevPrice) / prevPrice) * 100 : 0;
+          
+          if (goldPrice > 0) {
+            updatePrice('XAUUSD', goldPrice, goldChange);
+            return; // Success
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Metals-API error:', e.message);
+    }
+
+    // Fallback 2: Binance XAUUSDT (reliable but may differ slightly from spot)
     try {
       const goldResponse = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=XAUUSDT');
       if (goldResponse.ok) {
@@ -106,18 +157,17 @@ const DataService = (() => {
         const goldPrice = parseFloat(goldData.price);
         
         if (goldPrice > 0) {
-          // Calculate 24h change from previous price
           const prevPrice = currentPrices.XAUUSD.price;
           const goldChange = prevPrice > 0 ? ((goldPrice - prevPrice) / prevPrice) * 100 : 0;
           updatePrice('XAUUSD', goldPrice, goldChange);
+          return; // Success
         }
       }
     } catch (e) {
-      console.warn('Gold API error:', e.message);
+      console.warn('Binance Gold error:', e.message);
     }
 
-    // Fetch real-time forex rates using multiple free APIs
-    await fetchForexFromMultipleSources();
+    // If all fail, micro-movements will continue
   }
 
   /**
