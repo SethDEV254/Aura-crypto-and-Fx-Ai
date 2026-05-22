@@ -720,6 +720,27 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`[SCAN] Running risk calculator...`);
       runDynamicRiskCalculator();
       console.log(`[SCAN] ✅ Scan workflow complete!`);
+      
+      // 5. Final verification - ensure results are visible
+      setTimeout(() => {
+        console.log(`[SCAN] Final verification...`);
+        const outputState = document.getElementById('results-output-state');
+        const confEl = document.getElementById('output-confidence-val');
+        
+        if (outputState && outputState.classList.contains('hidden')) {
+          console.warn('[SCAN] ⚠️ Results still hidden, forcing display...');
+          outputState.classList.remove('hidden');
+          outputState.style.display = 'block';
+        }
+        
+        if (confEl && !confEl.innerText) {
+          console.warn('[SCAN] ⚠️ Confidence not set, forcing...');
+          confEl.innerText = `${report.data.confidence}%`;
+        }
+        
+        console.log('[SCAN] Confidence displayed:', confEl ? confEl.innerText : 'NOT FOUND');
+        console.log('[SCAN] Results visible:', outputState ? !outputState.classList.contains('hidden') : 'NOT FOUND');
+      }, 200);
 
     } catch (e) {
       console.error("[SCAN] ❌ ERROR:", e);
@@ -800,9 +821,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Radial Confidence Meter
     console.log(`[RENDER] Setting confidence display to: ${d.confidence}%`);
     els.outputConfidenceVal.innerText = `${d.confidence}%`;
+    
+    // Force text content as backup
+    els.outputConfidenceVal.textContent = `${d.confidence}%`;
+    
+    // Set radial progress
     els.radialProgressFill.style.strokeDasharray = `${d.confidence}, 100`;
     console.log(`[RENDER] Confidence element text:`, els.outputConfidenceVal.innerText);
     console.log(`[RENDER] Radial progress dasharray:`, els.radialProgressFill.style.strokeDasharray);
+    
+    // Verify confidence is visible
+    if (els.outputConfidenceVal.innerText !== `${d.confidence}%`) {
+      console.error('[RENDER] ❌ Confidence text not set correctly!');
+      els.outputConfidenceVal.innerHTML = `<strong>${d.confidence}%</strong>`;
+    }
     
     // Color code confidence circle
     els.radialProgressFill.style.stroke = d.bias === 'BULLISH' ? 'var(--neon-bull)' : 'var(--neon-bear)';
@@ -865,11 +897,23 @@ document.addEventListener('DOMContentLoaded', () => {
     els.resultsOutputState.classList.remove('hidden');
     console.log('[RENDER] Output state classes:', els.resultsOutputState.className);
     console.log('[RENDER] Output state display:', window.getComputedStyle(els.resultsOutputState).display);
+    
+    // Force display with inline style as backup
+    els.resultsOutputState.style.display = 'block';
+    els.resultsOutputState.style.visibility = 'visible';
+    els.resultsOutputState.style.opacity = '1';
+    console.log('[RENDER] Forced inline display styles applied');
 
     // Smooth scroll active results card into view to highlight the finished setup
     setTimeout(() => {
       els.resultsOutputState.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       console.log('[RENDER] ✅ Render complete! Results should be visible.');
+      
+      // Double-check display after scroll
+      if (els.resultsOutputState.classList.contains('hidden')) {
+        console.warn('[RENDER] ⚠️ Results still has hidden class, removing again...');
+        els.resultsOutputState.classList.remove('hidden');
+      }
     }, 50);
   }
 
