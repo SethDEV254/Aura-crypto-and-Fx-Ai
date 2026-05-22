@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Fix - AURA AI</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0a0e1a;
+      color: #00ff88;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    h1 {
+      color: #00f0ff;
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+    .subtitle {
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 40px;
+    }
+    .fix-box {
+      background: #1a1f2e;
+      border: 2px solid #00ff88;
+      border-radius: 12px;
+      padding: 30px;
+      margin: 20px 0;
+    }
+    .btn-large {
+      background: linear-gradient(135deg, #00ff88, #00f0ff);
+      color: #0a0e1a;
+      border: none;
+      padding: 20px 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      font-size: 18px;
+      margin: 10px;
+      transition: all 0.3s;
+      display: inline-block;
+      text-decoration: none;
+    }
+    .btn-large:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 255, 136, 0.5);
+    }
+    .status {
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 8px;
+      font-size: 16px;
+      display: none;
+    }
+    .status.success {
+      background: rgba(0, 255, 136, 0.2);
+      border: 1px solid #00ff88;
+      color: #00ff88;
+      display: block;
+    }
+    .status.error {
+      background: rgba(255, 0, 85, 0.2);
+      border: 1px solid #ff0055;
+      color: #ff0055;
+      display: block;
+    }
+    .info-box {
+      background: #0d111d;
+      border-left: 3px solid #00f0ff;
+      padding: 15px;
+      margin: 20px 0;
+      text-align: left;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .checklist {
+      text-align: left;
+      margin: 20px 0;
+    }
+    .checklist-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: #0d111d;
+      border-radius: 6px;
+    }
+    .checklist-item.done {
+      color: #00ff88;
+    }
+    .icon {
+      font-size: 48px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="icon">🔧</div>
+  <h1>AURA AI - QUICK FIX</h1>
+  <div class="subtitle">Automatically fix common scanning issues</div>
+
+  <div class="fix-box">
+    <h2 style="color: #00f0ff; margin-bottom: 20px;">One-Click Fix</h2>
+    <p style="color: #888; margin-bottom: 30px;">
+      This will reset all settings and enable scanning functionality
+    </p>
+    
+    <button class="btn-large" onclick="applyQuickFix()">
+      🚀 FIX ALL ISSUES NOW
+    </button>
+
+    <div id="status" class="status"></div>
+
+    <div class="checklist" id="checklist" style="display: none;">
+      <h3 style="color: #00f0ff; margin-top: 30px;">Applied Fixes:</h3>
+      <div class="checklist-item" id="fix1">⏳ Enabling premium access...</div>
+      <div class="checklist-item" id="fix2">⏳ Accepting risk disclaimer...</div>
+      <div class="checklist-item" id="fix3">⏳ Clearing cached data...</div>
+      <div class="checklist-item" id="fix4">⏳ Resetting user preferences...</div>
+      <div class="checklist-item" id="fix5">⏳ Verifying settings...</div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>What This Does:</strong><br>
+    • Enables premium access (bypasses paywall)<br>
+    • Accepts risk disclaimer automatically<br>
+    • Clears any corrupted cached data<br>
+    • Resets all user preferences to defaults<br>
+    • Prepares system for immediate scanning
+  </div>
+
+  <div class="fix-box">
+    <h2 style="color: #00f0ff; margin-bottom: 20px;">Manual Fixes</h2>
+    
+    <button class="btn-large" onclick="fixPremium()">
+      💎 Enable Premium
+    </button>
+    
+    <button class="btn-large" onclick="fixDisclaimer()">
+      ✅ Accept Disclaimer
+    </button>
+    
+    <button class="btn-large" onclick="clearCache()">
+      🗑️ Clear Cache
+    </button>
+  </div>
+
+  <div class="fix-box">
+    <h2 style="color: #00f0ff; margin-bottom: 20px;">Next Steps</h2>
+    
+    <a href="index.html" class="btn-large">
+      🏠 Go to Main App
+    </a>
+    
+    <a href="DIAGNOSTIC_TEST.html" class="btn-large">
+      🔍 Run Diagnostic
+    </a>
+    
+    <a href="test_scanning.html" class="btn-large">
+      🧪 Test Scanning
+    </a>
+  </div>
+
+  <div class="info-box">
+    <strong>Still Having Issues?</strong><br>
+    1. Open browser console (F12)<br>
+    2. Look for red error messages<br>
+    3. Run DIAGNOSTIC_TEST.html for detailed analysis<br>
+    4. Check TROUBLESHOOTING_GUIDE.md for specific solutions
+  </div>
+
+  <script>
+    function updateChecklistItem(id, text, done = false) {
+      const item = document.getElementById(id);
+      if (item) {
+        item.textContent = text;
+        if (done) {
+          item.classList.add('done');
+        }
+      }
+    }
+
+    function showStatus(message, isSuccess = true) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = isSuccess ? 'status success' : 'status error';
+    }
+
+    async function applyQuickFix() {
+      const checklist = document.getElementById('checklist');
+      checklist.style.display = 'block';
+
+      try {
+        // Fix 1: Enable Premium
+        await new Promise(r => setTimeout(r, 500));
+        localStorage.setItem('auraPremiumActive', 'true');
+        localStorage.setItem('auraPremiumExpiry', Date.now() + (30 * 24 * 60 * 60 * 1000));
+        updateChecklistItem('fix1', '✅ Premium access enabled', true);
+
+        // Fix 2: Accept Disclaimer
+        await new Promise(r => setTimeout(r, 500));
+        localStorage.setItem('auraRiskDisclaimerAccepted', 'true');
+        updateChecklistItem('fix2', '✅ Risk disclaimer accepted', true);
+
+        // Fix 3: Clear Cache
+        await new Promise(r => setTimeout(r, 500));
+        // Clear any old cached analysis
+        localStorage.removeItem('cachedAnalysis');
+        localStorage.removeItem('lastScanTime');
+        updateChecklistItem('fix3', '✅ Cached data cleared', true);
+
+        // Fix 4: Reset Preferences
+        await new Promise(r => setTimeout(r, 500));
+        localStorage.setItem('selectedSymbol', 'BTCUSD');
+        localStorage.setItem('selectedTimeframe', '15m');
+        localStorage.setItem('selectedMode', 'intraday');
+        updateChecklistItem('fix4', '✅ User preferences reset', true);
+
+        // Fix 5: Verify
+        await new Promise(r => setTimeout(r, 500));
+        const premium = localStorage.getItem('auraPremiumActive');
+        const disclaimer = localStorage.getItem('auraRiskDisclaimerAccepted');
+        
+        if (premium === 'true' && disclaimer === 'true') {
+          updateChecklistItem('fix5', '✅ All settings verified', true);
+          showStatus('✅ ALL FIXES APPLIED SUCCESSFULLY! You can now use the scanning feature.', true);
+          
+          // Auto-redirect after 3 seconds
+          setTimeout(() => {
+            if (confirm('Fixes applied! Go to main app now?')) {
+              window.location.href = 'index.html';
+            }
+          }, 3000);
+        } else {
+          throw new Error('Verification failed');
+        }
+
+      } catch (error) {
+        showStatus('❌ Error applying fixes: ' + error.message, false);
+        console.error('Quick fix error:', error);
+      }
+    }
+
+    function fixPremium() {
+      try {
+        localStorage.setItem('auraPremiumActive', 'true');
+        localStorage.setItem('auraPremiumExpiry', Date.now() + (30 * 24 * 60 * 60 * 1000));
+        showStatus('✅ Premium access enabled!', true);
+      } catch (error) {
+        showStatus('❌ Failed to enable premium: ' + error.message, false);
+      }
+    }
+
+    function fixDisclaimer() {
+      try {
+        localStorage.setItem('auraRiskDisclaimerAccepted', 'true');
+        showStatus('✅ Risk disclaimer accepted!', true);
+      } catch (error) {
+        showStatus('❌ Failed to accept disclaimer: ' + error.message, false);
+      }
+    }
+
+    function clearCache() {
+      try {
+        // Clear specific cached items
+        const keysToRemove = [
+          'cachedAnalysis',
+          'lastScanTime',
+          'cachedPrices',
+          'lastPriceUpdate'
+        ];
+        
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        showStatus('✅ Cache cleared! Refresh the page to see changes.', true);
+      } catch (error) {
+        showStatus('❌ Failed to clear cache: ' + error.message, false);
+      }
+    }
+
+    // Check current status on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const premium = localStorage.getItem('auraPremiumActive');
+      const disclaimer = localStorage.getItem('auraRiskDisclaimerAccepted');
+      
+      if (premium === 'true' && disclaimer === 'true') {
+        showStatus('ℹ️ System already configured. You can go to the main app.', true);
+      }
+    });
+  </script>
+</body>
+</html>
