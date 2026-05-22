@@ -203,8 +203,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check Premium Status on Load - MANDATORY PAYWALL FOR NEW USERS
   checkPremiumStatusOnLoad();
 
-  // Check Risk Disclaimer Acceptance
-  checkRiskDisclaimerStatus();
+  // Check Risk Disclaimer Acceptance - DISABLED for immediate access
+  // checkRiskDisclaimerStatus();
 
   // Initialize Services
   DataService.init();
@@ -611,10 +611,8 @@ document.addEventListener('DOMContentLoaded', () => {
      ========================================================================== */
 
   async function triggerAIScanWorkflow() {
-    // Check disclaimer first
-    if (!checkRiskDisclaimerBeforeScan()) {
-      return;
-    }
+    // Disclaimer check removed - allow immediate scanning
+    // Users can access disclaimer info in documentation
     
     // Swap UI state to loader
     els.resultsIdleState.classList.add('hidden');
