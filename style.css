@@ -2865,3 +2865,49 @@ body {
   30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
   40%, 60% { transform: translate3d(6px, 0, 0); }
 }
+
+
+/* ==========================================================================
+   Mandatory Premium Paywall Styles
+   ========================================================================== */
+.admin-overlay.mandatory-paywall {
+  background: rgba(4, 5, 9, 0.98);
+  backdrop-filter: blur(20px);
+  z-index: 99999;
+}
+
+.admin-overlay.mandatory-paywall .premium-modal {
+  border: 2px solid var(--neon-cyan);
+  box-shadow: 0 0 50px rgba(0, 240, 255, 0.4), inset 0 0 20px rgba(0, 240, 255, 0.05);
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 50px rgba(0, 240, 255, 0.4), inset 0 0 20px rgba(0, 240, 255, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 70px rgba(0, 240, 255, 0.6), inset 0 0 25px rgba(0, 240, 255, 0.08);
+  }
+}
+
+.welcome-premium-msg {
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Prevent interaction with background when mandatory paywall is active */
+.admin-overlay.mandatory-paywall ~ #terminal-container {
+  pointer-events: none;
+  filter: blur(3px);
+}

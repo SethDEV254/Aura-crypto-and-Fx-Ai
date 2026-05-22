@@ -195,6 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
      Initialization & Event Listeners
      ========================================================================== */
 
+  // Check Premium Status on Load - MANDATORY PAYWALL FOR NEW USERS
+  checkPremiumStatusOnLoad();
+
   // Initialize Services
   DataService.init();
   updateTime();
@@ -230,7 +233,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Dynamic Auto-Scan on startup (triggered 1 second after chart frame loads)
   setTimeout(() => {
-    triggerAIScanWorkflow();
+    // Only trigger scan if premium is active
+    if (state.isPremiumActive) {
+      triggerAIScanWorkflow();
+    }
   }, 1000);
 
   /**
@@ -1368,11 +1374,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (els.premiumPaywall) {
-      els.premiumPaywall.addEventListener('click', (e) => {
-        if (e.target === els.premiumPaywall) {
-          closePremiumPaywall();
-        }
-      });
+      els.premiumPaywall.addEventListener('click', handlePaywallOutsideClick);
     }
 
     // Payment tab switcher
@@ -1499,6 +1501,119 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  /**
+   * Check if user has premium access on page load
+   * If not, show mandatory paywall immediately
+   */
+  function checkPremiumStatusOnLoad() {
+    // Check localStorage for premium status
+    const premiumStatus = localStorage.getItem('auraPremiumStatus');
+    const premiumExpiry = localStorage.getItem('auraPremiumExpiry');
+    
+    if (premiumStatus === 'active' && premiumExpiry) {
+      const expiryDate = new Date(premiumExpiry);
+      const now = new Date();
+      
+      // Check if premium hasn't expired
+      if (expiryDate > now) {
+        state.isPremiumActive = true;
+        updatePremiumUI();
+        return;
+      }
+    }
+    
+    // No valid premium - show mandatory paywall
+    state.isPremiumActive = false;
+    
+    // Show paywall after a brief delay to let the page render
+    setTimeout(() => {
+      openMandatoryPremiumPaywall();
+    }, 500);
+  }
+
+  /**
+   * Opens premium paywall that cannot be closed without payment
+   */
+  function openMandatoryPremiumPaywall() {
+    if (els.premiumPaywall) {
+      els.premiumPaywall.classList.remove('hidden');
+      els.premiumPaywall.classList.add('mandatory-paywall');
+      
+      // Hide the close button for mandatory paywall
+      if (els.closePremiumBtn) {
+        els.closePremiumBtn.style.display = 'none';
+      }
+      
+      // Prevent closing by clicking outside
+      els.premiumPaywall.removeEventListener('click', handlePaywallOutsideClick);
+      
+      showPaymentStatus('mpesa', '', 'clear');
+      showPaymentStatus('paypal', '', 'clear');
+      showPaymentStatus('crypto', '', 'clear');
+      
+      const firstTab = els.payTabBtns[0];
+      if (firstTab) firstTab.click();
+
+      els.terminalCommandLine.innerText = `AURA SECURITY: Premium subscription required to access the platform. Please complete payment to continue.`;
+      
+      // Add welcome message to paywall
+      const premiumModal = document.querySelector('.premium-modal');
+      if (premiumModal && !document.querySelector('.welcome-premium-msg')) {
+        const welcomeMsg = document.createElement('div');
+        welcomeMsg.className = 'welcome-premium-msg';
+        welcomeMsg.style.cssText = 'padding: 15px; margin: 15px 0; background: rgba(0, 240, 255, 0.1); border-left: 3px solid var(--neon-cyan); border-radius: 4px;';
+        welcomeMsg.innerHTML = `
+          <h4 style="margin: 0 0 8px 0; color: var(--neon-cyan); font-size: 14px;">
+            <i class="fa-solid fa-star"></i> Welcome to AURA CRYPTO & FX AI
+          </h4>
+          <p style="margin: 0; font-size: 12px; color: var(--text-muted);">
+            Premium subscription required for full platform access. Choose your payment method below to unlock all features.
+          </p>
+        `;
+        const premiumHeader = premiumModal.querySelector('.premium-header');
+        if (premiumHeader) {
+          premiumHeader.after(welcomeMsg);
+        }
+      }
+    }
+  }
+
+  /**
+   * Update UI to reflect premium status
+   */
+  function updatePremiumUI() {
+    if (state.isPremiumActive) {
+      // Update Header Button UI
+      if (els.premiumUpgradeBtn) {
+        els.premiumUpgradeBtn.innerHTML = '<i class="fa-solid fa-crown" style="color:var(--neon-bull);"></i> PREMIUM ACTIVE';
+        els.premiumUpgradeBtn.classList.add('premium-active-badge');
+        els.premiumUpgradeBtn.style.background = 'linear-gradient(135deg, rgba(0, 255, 170, 0.15) 0%, rgba(0, 240, 255, 0.15) 100%)';
+        els.premiumUpgradeBtn.style.borderColor = 'var(--neon-bull)';
+      }
+
+      // Hide locks
+      document.querySelectorAll('.premium-lock').forEach(lock => {
+        lock.style.display = 'none';
+      });
+      
+      // Show close button if it was hidden
+      if (els.closePremiumBtn) {
+        els.closePremiumBtn.style.display = '';
+      }
+      
+      // Remove mandatory class
+      if (els.premiumPaywall) {
+        els.premiumPaywall.classList.remove('mandatory-paywall');
+      }
+    }
+  }
+
+  function handlePaywallOutsideClick(e) {
+    if (e.target === els.premiumPaywall && !els.premiumPaywall.classList.contains('mandatory-paywall')) {
+      closePremiumPaywall();
+    }
+  }
+
   function showPaymentStatus(gateway, htmlContent, type = 'info') {
     const statusBox = document.getElementById(`pay-${gateway}`).querySelector('.payment-status-message');
     if (!statusBox) return;
@@ -1525,6 +1640,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function unlockPremiumFeatures(gateway, details = '') {
     state.isPremiumActive = true;
     
+    // Save premium status to localStorage (30 days expiry)
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 30);
+    localStorage.setItem('auraPremiumStatus', 'active');
+    localStorage.setItem('auraPremiumExpiry', expiryDate.toISOString());
+    localStorage.setItem('auraPremiumGateway', gateway);
+    
     // Update premium stats
     state.activeUsersCount += 1;
     state.premiumMrr += 30; // $29.99 subscription rounded
@@ -1533,24 +1655,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Log transaction success
     addPaymentAuditLog(gateway, `Subscription activated ${details ? '(' + details.substring(0,8) + '...)' : ''}`, 'completed');
 
-    // Update Header Button UI
-    if (els.premiumUpgradeBtn) {
-      els.premiumUpgradeBtn.innerHTML = '<i class="fa-solid fa-crown" style="color:var(--neon-bull);"></i> PREMIUM ACTIVE';
-      els.premiumUpgradeBtn.classList.add('premium-active-badge');
-      els.premiumUpgradeBtn.style.background = 'linear-gradient(135deg, rgba(0, 255, 170, 0.15) 0%, rgba(0, 240, 255, 0.15) 100%)';
-      els.premiumUpgradeBtn.style.borderColor = 'var(--neon-bull)';
-    }
-
-    // Hide locks
-    document.querySelectorAll('.premium-lock').forEach(lock => {
-      lock.style.display = 'none';
-    });
+    // Update UI
+    updatePremiumUI();
 
     // Close paywall modal after delay
     setTimeout(() => {
       closePremiumPaywall();
       flashTerminalConfirmation('PREMIUM ENABLED');
-      els.terminalCommandLine.innerText = `AURA ACCOUNT: Premium tier unlocked successfully via ${gateway}. Access to Swing Mode & Forex core enabled.`;
+      els.terminalCommandLine.innerText = `AURA ACCOUNT: Premium tier unlocked successfully via ${gateway}. Full platform access enabled.`;
     }, 2000);
 
     // Sync admin premium toggle select element if exists
@@ -1561,6 +1673,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function lockPremiumFeatures() {
     state.isPremiumActive = false;
+    
+    // Clear premium status from localStorage
+    localStorage.removeItem('auraPremiumStatus');
+    localStorage.removeItem('auraPremiumExpiry');
+    localStorage.removeItem('auraPremiumGateway');
 
     // Log transaction revocation
     addPaymentAuditLog('System', 'Premium subscription tier revoked/deactivated', 'failed');
@@ -1598,6 +1715,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       switchAsset('BTCUSD', 'crypto');
     }
+    
+    // Show mandatory paywall again
+    openMandatoryPremiumPaywall();
 
     flashTerminalConfirmation('PREMIUM REVOKED');
     els.terminalCommandLine.innerText = `AURA ACCOUNT: Premium access revoked. Standard free features active.`;
