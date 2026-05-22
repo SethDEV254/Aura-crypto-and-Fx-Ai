@@ -17,8 +17,8 @@ const AnalysisEngine = (() => {
    * @returns {Object} Full analysis breakdown and structured string setup
    */
   function analyze(symbol, timeframe, mode, candles, adminConfig = null) {
-    if (!candles || candles.length < 50) {
-      throw new Error("Insufficient candle history. Need at least 50 periods for enhanced analysis.");
+    if (!candles || candles.length < 30) {
+      throw new Error("Insufficient candle history. Need at least 30 periods.");
     }
 
     const closes = candles.map(c => c.close);
@@ -32,14 +32,39 @@ const AnalysisEngine = (() => {
     const atr = calculateATR(candles, 14);
     const currentPrice = candles[candles.length - 1].close;
     
-    // Enhanced indicators
-    const stochastic = calculateStochastic(highs, lows, closes, 14, 3);
-    const bollinger = calculateBollingerBands(closes, 20, 2);
-    const vwap = calculateVWAP(candles);
-    const adx = calculateADX(highs, lows, closes, 14);
-    const marketCondition = detectMarketCondition(closes, atr);
-    const volumeProfile = analyzeVolumeProfile(candles);
-    const supportResistance = findKeyLevels(highs, lows, closes);
+    // Enhanced indicators (only if enough data)
+    let stochastic, bollinger, vwap, adx, marketCondition, volumeProfile, supportResistance;
+    
+    if (candles.length >= 50) {
+      try {
+        stochastic = calculateStochastic(highs, lows, closes, 14, 3);
+        bollinger = calculateBollingerBands(closes, 20, 2);
+        vwap = calculateVWAP(candles);
+        adx = calculateADX(highs, lows, closes, 14);
+        marketCondition = detectMarketCondition(closes, atr);
+        volumeProfile = analyzeVolumeProfile(candles);
+        supportResistance = findKeyLevels(highs, lows, closes);
+      } catch (e) {
+        console.warn('Enhanced indicators failed, using basic analysis:', e);
+        // Fallback to basic values
+        stochastic = { k: [50], d: [50] };
+        bollinger = { upper: [currentPrice * 1.02], middle: [currentPrice], lower: [currentPrice * 0.98] };
+        vwap = [currentPrice];
+        adx = { adx: [25], plusDI: [50], minusDI: [50] };
+        marketCondition = { condition: 'RANGING', strength: 'MODERATE', trendStrength: 1, volatility: 1 };
+        volumeProfile = { signal: 'NORMAL', ratio: 1, current: 1000, average: 1000 };
+        supportResistance = [];
+      }
+    } else {
+      // Use basic fallback values for insufficient data
+      stochastic = { k: [50], d: [50] };
+      bollinger = { upper: [currentPrice * 1.02], middle: [currentPrice], lower: [currentPrice * 0.98] };
+      vwap = [currentPrice];
+      adx = { adx: [25], plusDI: [50], minusDI: [50] };
+      marketCondition = { condition: 'RANGING', strength: 'MODERATE', trendStrength: 1, volatility: 1 };
+      volumeProfile = { signal: 'NORMAL', ratio: 1, current: 1000, average: 1000 };
+      supportResistance = [];
+    }
 
     // 2. Identify Smart Money & ICT Concepts
     const swings = findSwings(highs, lows, 3); // 3-period swing high/lows
@@ -99,14 +124,14 @@ const AnalysisEngine = (() => {
     const activeFVG = isBullish ? fvgs.bullish[0] : fvgs.bearish[0];
     
     // Enhanced Entry Logic with Key Level Consideration
-    const nearbySupport = supportResistance.find(level => 
+    const nearbySupport = supportResistance && supportResistance.length > 0 ? supportResistance.find(level => 
       level.type === 'SUPPORT' && level.price < currentPrice && 
       (currentPrice - level.price) / currentPrice < 0.01
-    );
-    const nearbyResistance = supportResistance.find(level => 
+    ) : null;
+    const nearbyResistance = supportResistance && supportResistance.length > 0 ? supportResistance.find(level => 
       level.type === 'RESISTANCE' && level.price > currentPrice && 
       (level.price - currentPrice) / currentPrice < 0.01
-    );
+    ) : null;
 
     if (isBullish) {
       // Bullish entry optimization
@@ -188,7 +213,7 @@ const AnalysisEngine = (() => {
     let riskLevel = 'MODERATE';
 
     // Market Condition Confluence (20 points max)
-    if (marketCondition.condition !== 'RANGING') {
+    if (marketCondition && marketCondition.condition !== 'RANGING') {
       confidence += 15;
       confluences.push(`${marketCondition.strength} ${marketCondition.condition.toLowerCase()} detected`);
       
@@ -207,32 +232,34 @@ const AnalysisEngine = (() => {
       confluences.push("EMA trend alignment confirmed");
       
       // Additional confluence if price is above/below VWAP
-      const currentVwap = vwap[vwap.length - 1];
-      if ((isBullish && currentPrice > currentVwap) || (!isBullish && currentPrice < currentVwap)) {
-        confidence += 5;
-        confluences.push("VWAP institutional level alignment");
+      if (vwap && vwap.length > 0) {
+        const currentVwap = vwap[vwap.length - 1];
+        if ((isBullish && currentPrice > currentVwap) || (!isBullish && currentPrice < currentVwap)) {
+          confidence += 5;
+          confluences.push("VWAP institutional level alignment");
+        }
       }
     }
 
     // Volume Confluence (10 points max)
-    if (volumeProfile.signal === 'HIGH_INSTITUTIONAL') {
+    if (volumeProfile && volumeProfile.signal === 'HIGH_INSTITUTIONAL') {
       confidence += 10;
       confluences.push("High institutional volume detected");
-    } else if (volumeProfile.signal === 'ELEVATED') {
+    } else if (volumeProfile && volumeProfile.signal === 'ELEVATED') {
       confidence += 5;
       confluences.push("Elevated volume activity");
     }
 
     // Technical Indicator Confluence (15 points max)
-    const rsiVal = rsi[rsi.length - 1];
-    const stochK = stochastic.k[stochastic.k.length - 1];
-    const adxVal = adx.adx[adx.adx.length - 1];
+    const rsiValue = rsi[rsi.length - 1];
+    const stochK = stochastic && stochastic.k ? stochastic.k[stochastic.k.length - 1] : 50;
+    const adxVal = adx && adx.adx ? adx.adx[adx.adx.length - 1] : 25;
     
     // RSI confluence
-    if (isBullish && rsiVal < 40) {
+    if (isBullish && rsiValue < 40) {
       confidence += 5;
       confluences.push("RSI oversold accumulation zone");
-    } else if (!isBullish && rsiVal > 60) {
+    } else if (!isBullish && rsiValue > 60) {
       confidence += 5;
       confluences.push("RSI overbought distribution zone");
     }
@@ -264,12 +291,14 @@ const AnalysisEngine = (() => {
     }
 
     // Support/Resistance Confluence (10 points max)
-    const nearbyLevel = supportResistance.find(level => 
-      Math.abs(level.price - currentPrice) / currentPrice < 0.005
-    );
-    if (nearbyLevel) {
-      confidence += 10;
-      confluences.push(`Key ${nearbyLevel.type.toLowerCase()} level proximity`);
+    if (supportResistance && supportResistance.length > 0) {
+      const nearbyLevel = supportResistance.find(level => 
+        Math.abs(level.price - currentPrice) / currentPrice < 0.005
+      );
+      if (nearbyLevel) {
+        confidence += 10;
+        confluences.push(`Key ${nearbyLevel.type.toLowerCase()} level proximity`);
+      }
     }
 
     // Liquidity Sweeps (8 points max)
