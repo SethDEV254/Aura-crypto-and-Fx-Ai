@@ -253,7 +253,7 @@ const AnalysisEngine = (() => {
     }
 
     // Technical Indicator Confluence (15 points max)
-    const rsiVal = rsi[rsi.length - 1];
+    // rsiVal already declared earlier, reuse it
     const stochK = stochastic.k[stochastic.k.length - 1];
     const adxVal = adx.adx[adx.adx.length - 1];
     
