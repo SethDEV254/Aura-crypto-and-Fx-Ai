@@ -124,14 +124,14 @@ const AnalysisEngine = (() => {
     const activeFVG = isBullish ? fvgs.bullish[0] : fvgs.bearish[0];
     
     // Enhanced Entry Logic with Key Level Consideration
-    const nearbySupport = supportResistance && supportResistance.length > 0 ? supportResistance.find(level => 
+    const nearbySupport = supportResistance.find(level => 
       level.type === 'SUPPORT' && level.price < currentPrice && 
       (currentPrice - level.price) / currentPrice < 0.01
-    ) : null;
-    const nearbyResistance = supportResistance && supportResistance.length > 0 ? supportResistance.find(level => 
+    );
+    const nearbyResistance = supportResistance.find(level => 
       level.type === 'RESISTANCE' && level.price > currentPrice && 
       (level.price - currentPrice) / currentPrice < 0.01
-    ) : null;
+    );
 
     if (isBullish) {
       // Bullish entry optimization
@@ -213,7 +213,7 @@ const AnalysisEngine = (() => {
     let riskLevel = 'MODERATE';
 
     // Market Condition Confluence (20 points max)
-    if (marketCondition && marketCondition.condition !== 'RANGING') {
+    if (marketCondition.condition !== 'RANGING') {
       confidence += 15;
       confluences.push(`${marketCondition.strength} ${marketCondition.condition.toLowerCase()} detected`);
       
@@ -232,34 +232,32 @@ const AnalysisEngine = (() => {
       confluences.push("EMA trend alignment confirmed");
       
       // Additional confluence if price is above/below VWAP
-      if (vwap && vwap.length > 0) {
-        const currentVwap = vwap[vwap.length - 1];
-        if ((isBullish && currentPrice > currentVwap) || (!isBullish && currentPrice < currentVwap)) {
-          confidence += 5;
-          confluences.push("VWAP institutional level alignment");
-        }
+      const currentVwap = vwap[vwap.length - 1];
+      if ((isBullish && currentPrice > currentVwap) || (!isBullish && currentPrice < currentVwap)) {
+        confidence += 5;
+        confluences.push("VWAP institutional level alignment");
       }
     }
 
     // Volume Confluence (10 points max)
-    if (volumeProfile && volumeProfile.signal === 'HIGH_INSTITUTIONAL') {
+    if (volumeProfile.signal === 'HIGH_INSTITUTIONAL') {
       confidence += 10;
       confluences.push("High institutional volume detected");
-    } else if (volumeProfile && volumeProfile.signal === 'ELEVATED') {
+    } else if (volumeProfile.signal === 'ELEVATED') {
       confidence += 5;
       confluences.push("Elevated volume activity");
     }
 
     // Technical Indicator Confluence (15 points max)
-    const rsiValue = rsi[rsi.length - 1];
-    const stochK = stochastic && stochastic.k ? stochastic.k[stochastic.k.length - 1] : 50;
-    const adxVal = adx && adx.adx ? adx.adx[adx.adx.length - 1] : 25;
+    const rsiVal = rsi[rsi.length - 1];
+    const stochK = stochastic.k[stochastic.k.length - 1];
+    const adxVal = adx.adx[adx.adx.length - 1];
     
     // RSI confluence
-    if (isBullish && rsiValue < 40) {
+    if (isBullish && rsiVal < 40) {
       confidence += 5;
       confluences.push("RSI oversold accumulation zone");
-    } else if (!isBullish && rsiValue > 60) {
+    } else if (!isBullish && rsiVal > 60) {
       confidence += 5;
       confluences.push("RSI overbought distribution zone");
     }
@@ -291,14 +289,12 @@ const AnalysisEngine = (() => {
     }
 
     // Support/Resistance Confluence (10 points max)
-    if (supportResistance && supportResistance.length > 0) {
-      const nearbyLevel = supportResistance.find(level => 
-        Math.abs(level.price - currentPrice) / currentPrice < 0.005
-      );
-      if (nearbyLevel) {
-        confidence += 10;
-        confluences.push(`Key ${nearbyLevel.type.toLowerCase()} level proximity`);
-      }
+    const nearbyLevel = supportResistance.find(level => 
+      Math.abs(level.price - currentPrice) / currentPrice < 0.005
+    );
+    if (nearbyLevel) {
+      confidence += 10;
+      confluences.push(`Key ${nearbyLevel.type.toLowerCase()} level proximity`);
     }
 
     // Liquidity Sweeps (8 points max)

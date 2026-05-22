@@ -611,6 +611,11 @@ document.addEventListener('DOMContentLoaded', () => {
      ========================================================================== */
 
   async function triggerAIScanWorkflow() {
+    // Check disclaimer first
+    if (!checkRiskDisclaimerBeforeScan()) {
+      return;
+    }
+    
     // Swap UI state to loader
     els.resultsIdleState.classList.add('hidden');
     els.resultsOutputState.classList.add('hidden');
@@ -655,11 +660,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Now execute core mathematical indicator calculation on client-side!
     try {
+      console.log(`Starting analysis for ${state.selectedSymbol} on ${state.selectedTimeframe}`);
+      
       // 1. Fetch live historical candles
       const candles = await DataService.fetchCandles(state.selectedSymbol, state.selectedTimeframe);
+      console.log(`Fetched ${candles.length} candles for analysis`);
+      
+      // Validate candles
+      if (!candles || candles.length < 50) {
+        throw new Error(`Insufficient candle data: only ${candles ? candles.length : 0} candles received`);
+      }
       
       // 2. Perform algorithmic scan
+      console.log('Running AnalysisEngine.analyze...');
       const report = AnalysisEngine.analyze(state.selectedSymbol, state.selectedTimeframe, state.selectedMode, candles, state.adminConfig);
+      console.log('Analysis complete:', report);
       
       // Save data locally
       state.activeSetup = report.data;
@@ -672,11 +687,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (e) {
       console.error("Scanning calculation error:", e);
-      els.terminalCommandLine.innerText = `AURA CRYPTO & FX AI ERROR: High latency or API timeout during scan calculation. Retrying buffer connection.`;
+      console.error("Error stack:", e.stack);
+      els.terminalCommandLine.innerText = `AURA CRYPTO & FX AI ERROR: ${e.message || 'Analysis failed'}. Please try again.`;
       
-      // Revert to idle
-      els.resultsLoadingState.classList.add('hidden');
-      els.resultsIdleState.classList.remove('hidden');
+      // Show error in UI
+      els.loadingStatusText.innerText = `ERROR: ${e.message || 'Analysis failed'}`;
+      els.loadingStatusText.style.color = 'var(--neon-red)';
+      
+      // Revert to idle after 3 seconds
+      setTimeout(() => {
+        els.resultsLoadingState.classList.add('hidden');
+        els.resultsIdleState.classList.remove('hidden');
+        els.loadingStatusText.style.color = '';
+      }, 3000);
     }
 
     // Enable button
@@ -1854,22 +1877,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Override the triggerAIScanWorkflow to check disclaimer first
+   * Check Risk Disclaimer before running analysis
    */
-  const originalTriggerAIScanWorkflow = triggerAIScanWorkflow;
-  
-  triggerAIScanWorkflow = function() {
-    // Check if disclaimer has been accepted
+  function checkRiskDisclaimerBeforeScan() {
     const disclaimerAccepted = localStorage.getItem('auraRiskDisclaimerAccepted');
     
     if (disclaimerAccepted !== 'true') {
       // Show disclaimer modal first
       showRiskDisclaimerModal();
-      return;
+      return false;
     }
-    
-    // Proceed with original scan workflow
-    return originalTriggerAIScanWorkflow.apply(this, arguments);
-  };
+    return true;
+  }
 
 })();
