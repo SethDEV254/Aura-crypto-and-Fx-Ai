@@ -4,7 +4,11 @@
  * Outputs confluences, trend structures, indicators, and exact trade setup structures.
  */
 
+console.log('[ANALYSIS ENGINE] Loading analysisEngine.js...');
+
 const AnalysisEngine = (() => {
+  
+  console.log('[ANALYSIS ENGINE] AnalysisEngine module initializing...');
 
   /**
    * Core analysis executor. Runs all calculations on the candlestick array.
@@ -1025,3 +1029,6 @@ ANALYSIS:
     analyze
   };
 })();
+
+console.log('[ANALYSIS ENGINE] ✅ AnalysisEngine loaded successfully');
+console.log('[ANALYSIS ENGINE] AnalysisEngine.analyze:', typeof AnalysisEngine.analyze);
