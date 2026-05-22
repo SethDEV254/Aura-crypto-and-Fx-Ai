@@ -660,39 +660,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Now execute core mathematical indicator calculation on client-side!
     try {
-      console.log(`Starting analysis for ${state.selectedSymbol} on ${state.selectedTimeframe}`);
+      console.log(`[SCAN] Starting analysis for ${state.selectedSymbol} on ${state.selectedTimeframe}`);
+      console.log(`[SCAN] Mode: ${state.selectedMode}, Admin Config:`, state.adminConfig);
       
       // 1. Fetch live historical candles
+      console.log(`[SCAN] Fetching candles...`);
       const candles = await DataService.fetchCandles(state.selectedSymbol, state.selectedTimeframe);
-      console.log(`Fetched ${candles.length} candles for analysis`);
+      console.log(`[SCAN] Fetched ${candles ? candles.length : 0} candles`);
       
       // Validate candles
       if (!candles || candles.length < 50) {
         throw new Error(`Insufficient candle data: only ${candles ? candles.length : 0} candles received`);
       }
       
+      // Log first and last candle for verification
+      console.log(`[SCAN] First candle:`, candles[0]);
+      console.log(`[SCAN] Last candle:`, candles[candles.length - 1]);
+      
       // 2. Perform algorithmic scan
-      console.log('Running AnalysisEngine.analyze...');
+      console.log(`[SCAN] Running AnalysisEngine.analyze...`);
       const report = AnalysisEngine.analyze(state.selectedSymbol, state.selectedTimeframe, state.selectedMode, candles, state.adminConfig);
-      console.log('Analysis complete:', report);
+      console.log(`[SCAN] Analysis complete!`);
+      console.log(`[SCAN] Report data:`, report.data);
+      console.log(`[SCAN] Confidence: ${report.data.confidence}%`);
+      console.log(`[SCAN] Bias: ${report.data.bias}`);
+      console.log(`[SCAN] Entry: ${report.data.entryPrice}`);
       
       // Save data locally
       state.activeSetup = report.data;
+      console.log(`[SCAN] Active setup saved to state`);
 
       // 3. Render setup outputs in UI slots
+      console.log(`[SCAN] Rendering report to UI...`);
       renderAIScanReport(report);
+      console.log(`[SCAN] Report rendered successfully`);
       
       // 4. Trigger dynamic calculator updates based on computed entry & SL
+      console.log(`[SCAN] Running risk calculator...`);
       runDynamicRiskCalculator();
+      console.log(`[SCAN] ✅ Scan workflow complete!`);
 
     } catch (e) {
-      console.error("Scanning calculation error:", e);
-      console.error("Error stack:", e.stack);
+      console.error("[SCAN] ❌ ERROR:", e);
+      console.error("[SCAN] Error message:", e.message);
+      console.error("[SCAN] Error stack:", e.stack);
       els.terminalCommandLine.innerText = `AURA CRYPTO & FX AI ERROR: ${e.message || 'Analysis failed'}. Please try again.`;
       
       // Show error in UI
       els.loadingStatusText.innerText = `ERROR: ${e.message || 'Analysis failed'}`;
       els.loadingStatusText.style.color = 'var(--neon-red)';
+      
+      // Alert user with more details
+      alert(`Scan Error: ${e.message}\n\nCheck browser console (F12) for details.`);
       
       // Revert to idle after 3 seconds
       setTimeout(() => {
@@ -711,7 +730,16 @@ document.addEventListener('DOMContentLoaded', () => {
    * Renders the computed mathematical values and SMC properties to DOM slots
    */
   function renderAIScanReport(report) {
+    console.log(`[RENDER] Starting render with report:`, report);
     const d = report.data;
+    
+    // Validate data
+    if (!d || typeof d.confidence === 'undefined') {
+      console.error('[RENDER] ❌ Invalid report data:', d);
+      throw new Error('Invalid analysis report data');
+    }
+    
+    console.log(`[RENDER] Confidence value: ${d.confidence}%`);
 
     // Badges & Bias
     els.outputPairBadge.innerText = `PAIR: ${d.symbol.substring(0, 3)}/${d.symbol.substring(3)}`;
@@ -749,8 +777,11 @@ document.addEventListener('DOMContentLoaded', () => {
     els.outputSlDetails.innerText = `Dynamic ATR Stop (SL size: ${slDistPct}%)`;
 
     // Radial Confidence Meter
+    console.log(`[RENDER] Setting confidence display to: ${d.confidence}%`);
     els.outputConfidenceVal.innerText = `${d.confidence}%`;
     els.radialProgressFill.style.strokeDasharray = `${d.confidence}, 100`;
+    console.log(`[RENDER] Confidence element text:`, els.outputConfidenceVal.innerText);
+    console.log(`[RENDER] Radial progress dasharray:`, els.radialProgressFill.style.strokeDasharray);
     
     // Color code confidence circle
     els.radialProgressFill.style.stroke = d.bias === 'BULLISH' ? 'var(--neon-bull)' : 'var(--neon-bear)';
