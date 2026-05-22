@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Analysis Engine</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0a0e1a;
+      color: #00ff88;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 { color: #00f0ff; }
+    .status {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 8px;
+      border-left: 3px solid #888;
+    }
+    .success { border-left-color: #00ff88; background: rgba(0, 255, 136, 0.1); }
+    .error { border-left-color: #ff0055; background: rgba(255, 0, 85, 0.1); }
+    pre {
+      background: #0d111d;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Analysis Engine Test</h1>
+  
+  <div id="status" class="status">Testing...</div>
+  <div id="results"></div>
+
+  <!-- Load scripts in order -->
+  <script src="dataService.js"></script>
+  <script src="analysisEngine.js"></script>
+  
+  <script>
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+    
+    // Test 1: Check if AnalysisEngine is defined
+    console.log('=== ANALYSIS ENGINE TEST ===');
+    console.log('1. Checking if AnalysisEngine is defined...');
+    
+    if (typeof AnalysisEngine === 'undefined') {
+      statusEl.className = 'status error';
+      statusEl.innerHTML = '❌ <strong>FAILED:</strong> AnalysisEngine is not defined!<br>Check browser console for errors.';
+      console.error('❌ AnalysisEngine is NOT defined');
+    } else {
+      console.log('✅ AnalysisEngine is defined');
+      console.log('2. Checking analyze function...');
+      
+      if (typeof AnalysisEngine.analyze === 'function') {
+        console.log('✅ AnalysisEngine.analyze is a function');
+        
+        // Test 2: Try to run analysis
+        console.log('3. Testing analysis with mock data...');
+        
+        // Initialize DataService
+        DataService.init();
+        
+        // Wait for data service to initialize
+        setTimeout(async () => {
+          try {
+            // Fetch real candles
+            console.log('4. Fetching candles...');
+            const candles = await DataService.fetchCandles('BTCUSD', '15m');
+            console.log(`✅ Fetched ${candles.length} candles`);
+            
+            // Run analysis
+            console.log('5. Running analysis...');
+            const result = AnalysisEngine.analyze('BTCUSD', '15m', 'intraday', candles);
+            console.log('✅ Analysis complete!');
+            console.log('Result:', result.data);
+            
+            // Display success
+            statusEl.className = 'status success';
+            statusEl.innerHTML = `
+              ✅ <strong>SUCCESS:</strong> AnalysisEngine is working!<br>
+              Confidence: ${result.data.confidence}%<br>
+              Bias: ${result.data.bias}<br>
+              Entry: ${result.data.entryPrice}
+            `;
+            
+            resultsEl.innerHTML = `
+              <h3>Full Analysis Result:</h3>
+              <pre>${JSON.stringify(result.data, null, 2)}</pre>
+            `;
+            
+          } catch (err) {
+            console.error('❌ Analysis failed:', err);
+            statusEl.className = 'status error';
+            statusEl.innerHTML = `
+              ❌ <strong>ANALYSIS FAILED:</strong><br>
+              ${err.message}<br>
+              <small>Check console for details</small>
+            `;
+          }
+        }, 3000);
+        
+      } else {
+        console.error('❌ AnalysisEngine.analyze is not a function');
+        statusEl.className = 'status error';
+        statusEl.innerHTML = '❌ <strong>FAILED:</strong> AnalysisEngine.analyze is not a function!';
+      }
+    }
+    
+    // Log all loaded scripts
+    console.log('=== LOADED SCRIPTS ===');
+    console.log('DataService:', typeof DataService);
+    console.log('AnalysisEngine:', typeof AnalysisEngine);
+    console.log('======================');
+  </script>
+</body>
+</html>
