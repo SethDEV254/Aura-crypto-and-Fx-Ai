@@ -85,7 +85,7 @@ const DataService = (() => {
   const currentPrices = {
     BTCUSD: { price: 77200, change: 0, prevPrice: 77200, lastUpdate: Date.now() },
     ETHUSD: { price: 2130, change: 0, prevPrice: 2130, lastUpdate: Date.now() },
-    SOLUSD: { price: 170, change: 0, prevPrice: 170, lastUpdate: Date.now() },
+    SOLUSD: { price: 86, change: 0, prevPrice: 86, lastUpdate: Date.now() },
     XAUUSD: { price: 4500, change: 0, prevPrice: 4500, lastUpdate: Date.now() },
     EURUSD: { price: 1.1624, change: 0, prevPrice: 1.1624, lastUpdate: Date.now() },
     GBPUSD: { price: 1.3359, change: 0, prevPrice: 1.3359, lastUpdate: Date.now() },
