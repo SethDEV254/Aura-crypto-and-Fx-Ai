@@ -859,12 +859,17 @@ document.addEventListener('DOMContentLoaded', () => {
     els.terminalCommandLine.innerText = `AURA CRYPTO & FX AI: Deep scan confluences validated for [${d.symbol}]. Setup compiled with ${d.confidence}% probability.`;
 
     // Swap states
+    console.log('[RENDER] Hiding loading state...');
     els.resultsLoadingState.classList.add('hidden');
+    console.log('[RENDER] Showing output state...');
     els.resultsOutputState.classList.remove('hidden');
+    console.log('[RENDER] Output state classes:', els.resultsOutputState.className);
+    console.log('[RENDER] Output state display:', window.getComputedStyle(els.resultsOutputState).display);
 
     // Smooth scroll active results card into view to highlight the finished setup
     setTimeout(() => {
       els.resultsOutputState.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      console.log('[RENDER] ✅ Render complete! Results should be visible.');
     }, 50);
   }
 
